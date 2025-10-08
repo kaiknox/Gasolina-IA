@@ -1,0 +1,5 @@
+1. Estructura de datos.
+
+2. Solución inicial    -> 2 estrategias    -> pensar coste y cómo de buena es.
+
+3. Operadores   (tener en cuenta factor de ramificación)
