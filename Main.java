@@ -1,62 +1,70 @@
-import IA.Gasolina.*;
+import IA.Gasolina.GasolinaBoard;
+import IA.Gasolina.GasolinaGoalTest;
+import IA.Gasolina.GasolinaHeuristicFunction;
+import IA.Gasolina.GasolinaSuccesorFunction;
+import aima.search.framework.GraphSearch;
+import aima.search.framework.Problem;
+import aima.search.framework.Search;
+import aima.search.framework.SearchAgent;
+import aima.search.informed.AStarSearch;
+import aima.search.informed.IterativeDeepeningAStarSearch;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class Main {
-    public static void main(String[] args) {
-        // Ejemplo de uso de las clases del JAR
-        
-        // 1. Crear una lista de gasolineras
-        // Constructor: Gasolineras(int ngas, int seed)
-        // ngas = número de gasolineras, seed = semilla aleatoria
-        Gasolineras gasolineras = new Gasolineras(10, 42);
 
-        System.out.println("polla");
-        
-        System.out.println("=== INFORMACIÓN DE GASOLINERAS ===");
-        System.out.println("Número de gasolineras: " + gasolineras.size());
-        
-        // 2. Recorrer las gasolineras y mostrar información
-        for (int i = 0; i < gasolineras.size(); i++) {
-            Gasolinera gas = gasolineras.get(i);
-            System.out.println("Gasolinera " + i + ": (" + 
-                             gas.getCoordX() + ", " + gas.getCoordY() + ")");
-            
-            // Mostrar peticiones de cada gasolinera
-            if (gas.getPeticiones().size() > 0) {
-                for (int j = 0; j < gas.getPeticiones().size(); j++) {
-                    System.out.println("  Petición " + j + ": " + 
-                                     gas.getPeticiones().get(j) + " días");
-                }
-            } else {
-                System.out.println("  -> Sin peticiones <-");
-            }
+    public static void main(String[] args) throws Exception{
+        /**
+         *  For a problem to be solvable:
+         *    count(0,prob) % 2 == count(0,sol) %2
+         */
+        // int [] prob = new int []{1 ,0, 1, 1, 0};
+        // int [] sol = new int[]{1, 1, 0, 1, 0};
+
+        int [] prob = new int []{1 ,0, 1, 1, 0};
+        int [] sol = new int[]{1, 1, 1, 1, 1};
+
+    GasolinaBoard board = new GasolinaBoard(prob, sol );
+
+        // Create the Problem object
+        Problem p = new  Problem(board,
+                                new GasolinaSuccesorFunction(),
+                                new GasolinaGoalTest(),
+                                new GasolinaHeuristicFunction());
+
+        // Instantiate the search algorithm
+	// AStarSearch(new GraphSearch()) or IterativeDeepeningAStarSearch()
+        Search alg = new AStarSearch(new GraphSearch());
+
+        // Instantiate the SearchAgent object
+        SearchAgent agent = new SearchAgent(p, alg);
+
+	// We print the results of the search
+        System.out.println();
+        printActions(agent.getActions());
+        printInstrumentation(agent.getInstrumentation());
+
+        // You can access also to the goal state using the
+	// method getGoalState of class Search
+
+    }
+
+        private static void printInstrumentation(Properties properties) {
+        Iterator keys = properties.keySet().iterator();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            String property = properties.getProperty(key);
+            System.out.println(key + " : " + property);
         }
         
-        // 3. Crear centros de distribución
-        // Constructor: CentrosDistribucion(int ncen, int mult, int seed)
-        // ncen = número de centros, mult = multiplicidad, seed = semilla
-        CentrosDistribucion centros = new CentrosDistribucion(5, 1, 123);
-        
-        System.out.println("\n=== INFORMACIÓN DE CENTROS DE DISTRIBUCIÓN ===");
-        System.out.println("Número de centros: " + centros.size());
-        
-        for (int i = 0; i < centros.size(); i++) {
-            Distribucion centro = centros.get(i);
-            System.out.println("Centro " + i + ": (" + 
-                             centro.getCoordX() + ", " + centro.getCoordY() + ")");
-        }
-        
-        // 4. Ejemplo de manipulación de datos
-        System.out.println("\n=== EJEMPLO DE MANIPULACIÓN ===");
-        if (gasolineras.size() > 0) {
-            Gasolinera primeraGas = gasolineras.get(0);
-            System.out.println("Primera gasolinera original: (" + 
-                             primeraGas.getCoordX() + ", " + primeraGas.getCoordY() + ")");
-            
-            // Modificar coordenadas
-            primeraGas.setCoordX(100);
-            primeraGas.setCoordY(200);
-            System.out.println("Primera gasolinera modificada: (" + 
-                             primeraGas.getCoordX() + ", " + primeraGas.getCoordY() + ")");
+    }
+    
+    private static void printActions(List actions) {
+        for (int i = 0; i < actions.size(); i++) {
+            String action = (String) actions.get(i);
+            System.out.println(action);
         }
     }
+    
 }
