@@ -2,6 +2,7 @@ import IA.Gasolina.GasolinaBoard;
 import IA.Gasolina.GasolinaGoalTest;
 import IA.Gasolina.GasolinaHeuristicFunction;
 import IA.Gasolina.GasolinaSuccesorFunction;
+import IA.Gasolina.Estado;
 import aima.search.framework.GraphSearch;
 import aima.search.framework.Problem;
 import aima.search.framework.Search;
@@ -11,21 +12,23 @@ import aima.search.informed.IterativeDeepeningAStarSearch;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import aima.search.informed.HillClimbingSearch;
+import aima.search.informed.SimulatedAnnealingSearch;
 
 public class Main {
 
     public static void main(String[] args) throws Exception{
-        /**
-         *  For a problem to be solvable:
-         *    count(0,prob) % 2 == count(0,sol) %2
-         */
-        // int [] prob = new int []{1 ,0, 1, 1, 0};
-        // int [] sol = new int[]{1, 1, 0, 1, 0};
 
-        int [] prob = new int []{1 ,0, 1, 1, 0};
-        int [] sol = new int[]{1, 1, 1, 1, 1};
 
-    GasolinaBoard board = new GasolinaBoard(prob, sol );
+
+        int numGasolineras = 10;
+        int seed = 12345;
+        Gasolineras gasolineras = new Gasolineras(numGasolineras, seed);
+
+        Estado estado_inicial = new Estado();
+        estado_inicial.crearEstadoInicial(gasolineras);
+
+        GasolinaBoard board = new GasolinaBoard(estado_inicial);
 
         // Create the Problem object
         Problem p = new  Problem(board,
@@ -35,10 +38,10 @@ public class Main {
 
         // Instantiate the search algorithm
 	// AStarSearch(new GraphSearch()) or IterativeDeepeningAStarSearch()
-        Search alg = new AStarSearch(new GraphSearch());
+        Search search = new HillClimbingSearch();
 
         // Instantiate the SearchAgent object
-        SearchAgent agent = new SearchAgent(p, alg);
+        SearchAgent agent = new SearchAgent(p, search);
 
 	// We print the results of the search
         System.out.println();
