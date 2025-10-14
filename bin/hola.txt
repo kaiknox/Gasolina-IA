@@ -1,0 +1,20 @@
+1. Estructura de datos.
+
+2. Solucion inicial    -> 2 estrategias    -> pensar coste y como de buena es.
+
+3. Operadores   (tener en cuenta factor de ramificacion):
+ESQUEMA:
+- Tendremos unas gasolineras y unos centros de distribucion
+- Necesitamos una funcion y un esquema de datos que permita saber/simular:
+    - A donde va cada camion (los viajes) --> - Operador super basico (1 camion va a un punto; Gasolineras/CentrosDistribucion --> Coger una peticion)
+                                              - Operador basico (1 camion hace un viaje; Va a los puntos que deba ir siendo el ultimo el centro de donde ha salido)
+
+    - Gestionar que peticiones ya se han completado en cada iteracion para decidir cuales hacer en la siguiente
+    - Crear (Como minimo 2 diferentes) las logicas que deciden en que orden se cogen las peticiones
+    --> Crear solucion/es inicial/es que respeten las restricciones
+
+CREAR SUCESORES
+IDEAS:
+- Operador Interpolacion Pequena (Si cada iteracion se calcula un viaje entero no sirve. Si en una iteracion se decide un destino, cambiar el orden en el que un camion visita las gasolineras en un viaje puede crear nuevas variaciones ya que abre la puerta a que en la siguiente itereacion se asigne esa peticion a otro camion que llegue mejor)
+- Operador Interpolacion Grande (Cambia el orden en el que hace los viajes, , esto puede crear nuevas ya que abre la puerta a que en la siguiente itereacion se asigne una de esas peticiones a otro camion que llegue mejor)
+- Operador Cambio de Rutas (Podemos cambiar una gasolinera de un viaje, si tenemos ya los viajes que se han hecho, y arrastrar ese cambio a los demas)

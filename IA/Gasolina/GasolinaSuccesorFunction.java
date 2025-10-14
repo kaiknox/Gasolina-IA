@@ -12,7 +12,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
         GasolinaBoard board = (GasolinaBoard) state;
 
         for(int i = 0; i < 5; i++){
-            GasolinaBoard new_board = new GasolinaBoard(board.getBoard(), board.getSolution());
+            GasolinaBoard new_board = new GasolinaBoard(board.getEstado());
             new_board.flip_it(i);
             Successor s = new Successor("flip " + i, new_board);
             retval.add(s);

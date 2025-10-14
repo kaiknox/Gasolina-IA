@@ -3,6 +3,8 @@ import IA.Gasolina.GasolinaGoalTest;
 import IA.Gasolina.GasolinaHeuristicFunction;
 import IA.Gasolina.GasolinaSuccesorFunction;
 import IA.Gasolina.Estado;
+import IA.Gasolina.Gasolineras;
+import IA.Gasolina.CentrosDistribucion;
 import aima.search.framework.GraphSearch;
 import aima.search.framework.Problem;
 import aima.search.framework.Search;
@@ -19,14 +21,10 @@ public class Main {
 
     public static void main(String[] args) throws Exception{
 
-
-
-        int numGasolineras = 10;
-        int seed = 12345;
-        Gasolineras gasolineras = new Gasolineras(numGasolineras, seed);
-
+        Gasolineras gasolineras = new Gasolineras(0,0);
+        CentrosDistribucion centros = new CentrosDistribucion(0,0,0);
         Estado estado_inicial = new Estado();
-        estado_inicial.crearEstadoInicial(gasolineras);
+        estado_inicial.crearEstadoInicial(gasolineras, centros);
 
         GasolinaBoard board = new GasolinaBoard(estado_inicial);
 
