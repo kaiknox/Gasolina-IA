@@ -1,5 +1,8 @@
 package IA.Gasolina;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Board implementation moved/renamed from ProbIA5Board
  */
@@ -12,33 +15,29 @@ public class GasolinaBoard {
         vector with the parity of the coins (we can assume 0 = heads, 1 = tails
      */
 
-    private Estado estado;
-    private int [] board;
-    private static int [] solution;
+    private Estado estado_actual;
 
     /* Constructor */
     public GasolinaBoard(Estado estado_inicial) {
-        this.estado = estado_inicial;
-        // Initialize board and solution
-        // ^^^^^ TO COMPLETE ^^^^^
+
+        this.estado_actual = estado_inicial;
 
     }
 
-    public void flip_it(int i){
-        // ^^^^^ TO COMPLETE ^^^^^
+    /* OPERADORES */
+    public void moverCamion(int idCamion, int nuevaX, int nuevaY) {
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        camion.setCoordX(nuevaX);
+        camion.setCoordY(nuevaY);
     }
 
     /* Heuristic function */
-    public double heuristic(){
-        // compute the number of coins out of place respect to solution
-        return 0;
-    }
 
-     /* Goal test */
-     public boolean is_goal(){
-         // compute if board = solution
-         return true;
-     }
+    public double heuristic(){ return 0; }
+
+    /* Goal test */
+
+     public boolean is_goal(){ return true; } // --------------- no se si hace falta
 
      /* auxiliary functions */
 
@@ -46,15 +45,10 @@ public class GasolinaBoard {
 
     /* ^^^^^ TO COMPLETE ^^^^^ */
 
-    public int[] getBoard() {
-        return board;
-    }
+    private double distancia(int x1, int y1, int x2, int y2) {
 
-    public int[] getSolution() {
-        return solution;
+        int dx = x1 - x2;
+        int dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
     }
-    public Estado getEstado() {
-        return estado;
-    }
-
 }

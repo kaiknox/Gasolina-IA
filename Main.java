@@ -17,14 +17,59 @@ import java.util.Properties;
 import aima.search.informed.HillClimbingSearch;
 import aima.search.informed.SimulatedAnnealingSearch;
 
+import IA.Gasolina.Gasolinera;
+import IA.Gasolina.Distribucion;
+import IA.Gasolina.Gasolineras;
+import IA.Gasolina.CentrosDistribucion;
+import IA.Gasolina.Camion;
+
+import java.util.List;
+import java.util.ArrayList;
+
+
 public class Main {
+
+    public static List<Gasolinera> gasolineras;
+    public static List<Distribucion> centros;
+
+    public static int numGasolineras = 10;
+    public static int numCentros = 10;
+    public static int seed = 12345;
+
+    public void escribirEstado() {
+
+        System.out.println("---------- Coordenadas de las Gasolineras ----------");
+
+        for(int i = 0; i < gasolineras.size(); ++i) {
+            System.out.println("Gasolinera " + i + ": " + gasolineras.get(i).getCoordX() + ", " + gasolineras.get(i).getCoordY());
+        }
+
+        System.out.println("---------- Coordenadas de los Centros ----------");
+
+        for(int i = 0; i < centros.size(); ++i) {
+            System.out.println("Centros " + i + ": " + centros.get(i).getCoordX() + ", " + centros.get(i).getCoordY());
+        }
+
+        System.out.println("---------- Coordenadas de los Camiones ----------");
+
+        // for(int i = 0; i < camiones.size(); ++i) {
+        //     System.out.println("Camiones " + i + ": " + camiones.get(i).getCoordX() + ", " + centros.get(i).getCoordY());
+        // }
+    }
 
     public static void main(String[] args) throws Exception{
 
-        Gasolineras gasolineras = new Gasolineras(0,0);
-        CentrosDistribucion centros = new CentrosDistribucion(0,0,0);
-        Estado estado_inicial = new Estado();
-        estado_inicial.crearEstadoInicial(gasolineras, centros);
+        // Inicializar problema:
+        
+        Gasolineras gasolineras = new Gasolineras(numGasolineras, seed);
+        CentrosDistribucion centros = new CentrosDistribucion(numCentros, 1, seed);
+        List<Camion> camiones = new ArrayList<>();
+        for(int i = 0; i < numCentros; ++i) {
+            camiones.add(new Camion(centros.get(i).getCoordX(), centros.get(i).getCoordY()));
+        }
+
+        Estado estado_inicial = new Estado(camiones);
+        estado_inicial.crearEstadoInicial(0); // 0, 1 o 2 dependiendo de la función que queramos usar, 0 es ninguna función.
 
         GasolinaBoard board = new GasolinaBoard(estado_inicial);
 
@@ -66,6 +111,8 @@ public class Main {
             String action = (String) actions.get(i);
             System.out.println(action);
         }
+
+
+        
     }
-    
 }

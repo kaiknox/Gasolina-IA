@@ -1,33 +1,34 @@
 package IA.Gasolina;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Estado {
+    
+    public List<Camion> camiones;
 
-    private Gasolineras gasolineras;
-    private CentrosDistribucion centros;
-    private List<Camion> camiones;
+    public Estado(List<Camion> camiones) {
+        this.camiones = new ArrayList<>(camiones);
+    }
 
-    public void crearEstadoInicial(Gasolineras gasolinerasParam, CentrosDistribucion centrosParam) {
-        // Store provided collections
-        this.gasolineras = gasolinerasParam;
-        this.centros = centrosParam;
-
-        // Initialize camiones list
-        this.camiones = new ArrayList<>();
-
-        // Create a Camion for each distribution center
-        for (int i = 0; i < centros.size(); i++) {
-            Distribucion centro = centros.get(i);
-            camiones.add(new Camion(centro.getCoordX(), centro.getCoordY()));
+    public void crearEstadoInicial(int funcionAescoger) {
+        if(funcionAescoger == 1) {
+            crearEstadoInicial1();
+        } 
+        else if (funcionAescoger == 2) {
+            crearEstadoInicial2();
         }
+    }
 
+    private void crearEstadoInicial1() {
         ///////// Mas adelante hay que crear un estado inicial con una solución mejor.
     }
 
-    public Gasolineras getGasolineras() { return gasolineras; }
-    public CentrosDistribucion getCentros() { return centros; }
-    public List<Camion> getCamiones() { return camiones; }
+    private void crearEstadoInicial2() {
+        ///////// Mas adelante hay que crear un estado inicial con una solución mejor.
+    }
 
+    public List<Camion> getCamiones() {
+        return camiones;
+    }
 }
