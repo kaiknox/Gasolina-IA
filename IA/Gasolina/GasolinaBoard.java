@@ -31,6 +31,27 @@ public class GasolinaBoard {
         camion.setCoordY(nuevaY);
     }
 
+
+    public void reasignarPeticion(int idCamionOrigen, int idCamionDestino, int idPeticion) {
+        Camion camionOrigen = estado_actual.getCamiones().get(idCamionOrigen);
+        Camion camionDestino = estado_actual.getCamiones().get(idCamionDestino);
+
+        Peticion peticion = camionOrigen.removePeticion(idPeticion);
+        camionDestino.addPeticion(peticion);
+    }
+
+    public void intercambiaPeticiones(int idCamionA, int idCamionB, int idPeticionA, int idPeticionB) {
+        Camion camionA = estado_actual.getCamiones().get(idCamionA);
+        Camion camionB = estado_actual.getCamiones().get(idCamionB);
+
+        Peticion temp = camionA.popPeticion(idPeticionA);
+        Peticion temp2 = camionB.popPeticion(idPeticionB);
+        camionA.addPeticion(temp2);
+        camionB.addPeticion(temp);
+    }
+
+
+
     /* Heuristic function */
 
     public double heuristic(){ return 0; }
@@ -46,7 +67,6 @@ public class GasolinaBoard {
     /* ^^^^^ TO COMPLETE ^^^^^ */
 
     private double distancia(int x1, int y1, int x2, int y2) {
-
         int dx = x1 - x2;
         int dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
