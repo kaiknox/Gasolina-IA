@@ -21,7 +21,6 @@ public class GasolinaBoard {
     public GasolinaBoard(Estado estado_inicial) {
 
         this.estado_actual = estado_inicial;
-
     }
 
     /* OPERADORES */
@@ -31,10 +30,11 @@ public class GasolinaBoard {
         camion.setCoordY(nuevaY);
     }
 
-
     public void reasignarPeticion(int idCamionOrigen, int idCamionDestino, int idPeticion) {
         Camion camionOrigen = estado_actual.getCamiones().get(idCamionOrigen);
         Camion camionDestino = estado_actual.getCamiones().get(idCamionDestino);
+
+        
 
         Peticion peticion = camionOrigen.removePeticion(idPeticion);
         camionDestino.addPeticion(peticion);

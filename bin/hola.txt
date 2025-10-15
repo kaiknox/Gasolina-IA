@@ -18,3 +18,52 @@ IDEAS:
 - Operador Interpolacion Pequena (Si cada iteracion se calcula un viaje entero no sirve. Si en una iteracion se decide un destino, cambiar el orden en el que un camion visita las gasolineras en un viaje puede crear nuevas variaciones ya que abre la puerta a que en la siguiente itereacion se asigne esa peticion a otro camion que llegue mejor)
 - Operador Interpolacion Grande (Cambia el orden en el que hace los viajes, , esto puede crear nuevas ya que abre la puerta a que en la siguiente itereacion se asigne una de esas peticiones a otro camion que llegue mejor)
 - Operador Cambio de Rutas (Podemos cambiar una gasolinera de un viaje, si tenemos ya los viajes que se han hecho, y arrastrar ese cambio a los demas)
+
+IDEAS DEL COPILOT:
+
+Operadores recomendados para Hill Climbing:
+
+    1. Reasignar una petición a otro camión ✅ (BÁSICO - empieza por este)
+    Tomas una petición asignada al camión A y la reasignas al camión B
+    Por qué funciona: puede encontrar un camión más cercano o con mejor ruta
+    Implementación: selecciona petición aleatoria → prueba asignarla a otro camión
+
+    2. Intercambiar dos peticiones entre camiones ✅ (BÁSICO)
+    Camión A tiene petición P1, camión B tiene P2 → las intercambias
+    Por qué funciona: puede optimizar rutas cuando dos camiones tienen peticiones "cruzadas"
+    Implementación: selecciona 2 peticiones de camiones diferentes → intercámbialas
+
+    3. Cambiar el orden de visita dentro de un viaje ✅ (IMPORTANTE)
+    Un viaje tiene 2 gasolineras [G1, G2] → lo cambias a [G2, G1]
+    Por qué funciona: el orden afecta la distancia total (centro → G1 → G2 → centro vs centro → G2 → G1 → centro)
+    Implementación: selecciona un viaje → invierte el orden de sus paradas
+
+    4. Mover una petición a otro viaje del mismo camión ✅
+    El camión tiene Viaje1[P1, P2] y Viaje2[P3] → mueves P2 a Viaje2 quedando Viaje1[P1] y Viaje2[P3, P2]
+    Por qué funciona: puede redistribuir mejor la carga entre viajes
+    Validación necesaria: que no se exceda v viajes ni k km
+
+    5. Fusionar dos viajes de un camión 💡 (AVANZADO)
+    Si un camión tiene Viaje1[P1] y Viaje2[P2] → los fusiona en Viaje1[P1, P2] (elimina Viaje2)
+    Por qué funciona: reduce el número de viajes (ahorra distancia de ida/vuelta al centro)
+    Validación: que las 2 peticiones quepan en un viaje (máximo 2 depósitos)
+
+    6. Dividir un viaje en dos 💡 (AVANZADO)
+    Viaje1[P1, P2] → Viaje1[P1] y Viaje2[P2]
+    Por qué funciona: a veces conviene hacer viajes individuales si optimiza otras restricciones
+    Validación: que no se exceda el límite v de viajes
+
+    7. Swap de peticiones dentro del mismo viaje ⭐ (MUY ÚTIL)
+    Similar al operador 3, pero pensado específicamente para el orden
+    Si visitas [Gasolinera5, Gasolinera3] → prueba [Gasolinera3, Gasolinera5]
+
+
+Mi recomendación para empezar (orden de implementación)
+    Fase 1 - Operadores básicos (implementa estos primero):
+        Reasignar petición a otro camión (operador 1)
+        Intercambiar orden dentro de un viaje (operador 3)
+        Intercambiar peticiones entre camiones (operador 2)
+
+    Fase 2 - Si funciona bien, añade:
+        Mover petición entre viajes del mismo camión (operador 4)
+        Fusionar viajes (operador 5)

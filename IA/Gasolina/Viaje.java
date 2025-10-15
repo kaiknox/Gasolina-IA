@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Viaje {
-    
-    public List<Integer> indicesGasolineras;     // Índices en Main.gasolineras
-    public List<Integer> indicesPeticiones;      // Índices en getPeticiones() de cada gasolinera
-    public double distanciaTotal;
+
+    private int coordX_inicio;
+    private int coordY_inicio;
+    private int coordX_fin;
+    private int coordY_fin;
+
+    private double distanciaTotal;
 
     // En la clase Viaje, lo que se guarda son referencias a las peticiones que ese viaje va a atender.
     // Como las gasolineras y sus peticiones ya están en Main.gasolineras, solo necesitas saber:
