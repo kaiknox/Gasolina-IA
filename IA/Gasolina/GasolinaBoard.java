@@ -16,6 +16,8 @@ public class GasolinaBoard {
      */
 
     private Estado estado_actual;
+    private List<Gasolinera> gasolineras;
+    private List<Distribucion> centrosDistribucion;
 
     /* Constructor */
     public GasolinaBoard(Estado estado_inicial) {
@@ -63,6 +65,78 @@ public class GasolinaBoard {
      /* auxiliary functions */
 
      // Some functions will be needed for creating a copy of the state
+
+
+
+
+
+
+    public void crearEstadoInicial(int funcionAescoger) {
+        if(funcionAescoger == 1) {
+            crearEstadoInicial1();
+        }
+        else if (funcionAescoger == 2) {
+            crearEstadoInicial2();
+        }
+    }
+
+    private void crearEstadoInicial1() {
+        // Strategy 1: assign each gas station request to the nearest truck
+        // Assumptions:
+        // - There is a global list `Main.gasolineras` accessible which contains Gasolinera objects
+        // - Each Gasolinera has getPeticiones() which returns ArrayList<Integer> (days pending)
+        // - Each Camion has coordinates and addPeticion(Peticion) method
+
+        // Defensive checks
+        if (gasolineras == null || gasolineras.isEmpty() || estado_actual.getCamiones() == null || estado_actual.getCamiones().isEmpty()) return;
+
+        for (int gIndex = 0; gIndex < gasolineras.size(); gIndex++) {
+            Gasolinera g = gasolineras.get(gIndex);
+            java.util.ArrayList<Integer> peticiones = g.getPeticiones();
+            if (peticiones == null) continue;
+
+            for (int d = 0; d < peticiones.size(); d++) {
+                // find nearest camion
+                int bestCamion = -1;
+                double bestDist = Double.MAX_VALUE;
+                for (int c = 0; c < estado_actual.getCamiones().size(); c++) {
+                    Camion camion = estado_actual.getCamiones().get(c);
+                    double dist = distancia(camion.getCoordX(), camion.getCoordY(), g.getCoordX(), g.getCoordY());
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestCamion = c;
+                    }
+                }
+
+                if (bestCamion >= 0) {
+                    estado_actual.getCamiones().get(bestCamion).addPeticion(gIndex, d);
+                }
+            }
+        }
+    }
+
+    private void crearEstadoInicial2() {
+        // Strategy 2: round-robin assign requests across trucks
+        if (gasolineras == null || gasolineras.isEmpty() || camiones == null || camiones.isEmpty()) return;
+
+        int camionIndex = 0;
+        int nCamiones = camiones.size();
+
+        for (int gIndex = 0; gIndex < gasolineras.size(); gIndex++) {
+            Gasolinera g = gasolineras.get(gIndex);
+            java.util.ArrayList<Integer> peticiones = g.getPeticiones();
+            if (peticiones == null) continue;
+
+            for (int d = 0; d < peticiones.size(); d++) {
+                camiones.get(camionIndex).addPeticion(gIndex, d);
+                camionIndex = (camionIndex + 1) % nCamiones;
+            }
+        }
+    }
+
+
+
+
 
     /* ^^^^^ TO COMPLETE ^^^^^ */
 

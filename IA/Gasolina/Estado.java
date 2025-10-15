@@ -9,23 +9,17 @@ public class Estado {
 
     public Estado(List<Camion> camiones) {
         this.camiones = new ArrayList<>(camiones);
+        this.gasolineras = null;
+        this.centrosDistribucion = null;
     }
 
-    public void crearEstadoInicial(int funcionAescoger) {
-        if(funcionAescoger == 1) {
-            crearEstadoInicial1();
-        } 
-        else if (funcionAescoger == 2) {
-            crearEstadoInicial2();
-        }
-    }
-
-    private void crearEstadoInicial1() {
-        ///////// Mas adelante hay que crear un estado inicial con una solución mejor.
-    }
-
-    private void crearEstadoInicial2() {
-        ///////// Mas adelante hay que crear un estado inicial con una solución mejor.
+    /**
+     * New constructor: accept references to gasolineras and centros so initializers can use them
+     */
+    public Estado(List<Camion> camiones, List<Gasolinera> gasolineras, List<Distribucion> centros) {
+        this.camiones = new ArrayList<>(camiones);
+        this.gasolineras = gasolineras;
+        this.centrosDistribucion = centros;
     }
 
     public List<Camion> getCamiones() {
