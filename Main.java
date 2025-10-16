@@ -3,6 +3,8 @@ import IA.Gasolina.GasolinaGoalTest;
 import IA.Gasolina.GasolinaHeuristicFunction;
 import IA.Gasolina.GasolinaSuccesorFunction;
 import IA.Gasolina.Estado;
+import IA.Gasolina.Viaje;
+import IA.Gasolina.Viajes;
 import IA.Gasolina.Gasolineras;
 import IA.Gasolina.CentrosDistribucion;
 import aima.search.framework.GraphSearch;
@@ -50,7 +52,16 @@ public class Main {
         List<Camion> camiones = estado_inicial.getCamiones();
         for(int i = 0; i < camiones.size(); ++i) {
             System.out.println("Camiones " + i + ": " + camiones.get(i).getCoordX() + ", " + camiones.get(i).getCoordY());
+            List<Viajes> viajes = camiones.get(i).getListaViajes();
+            for(int j = 0; j < viajes.size(); ++j) {
+                System.out.println("Viaje " + j + ": distancia total = " + viajes.get(j).getDistanciaTotal() + ", tiempo total = " + viajes.get(j).getTiempoTotal() + ", cantidad = " + viajes.get(j).getCantidad());
+                List<Viaje> listaViajes = viajes.get(j).getListaViajes();
+                for(int k = 0; k < listaViajes.size(); ++k) {
+                    System.out.println("    Peticion " + (k+1) + ": Inicio= " + listaViajes.get(k).getCoordX_inicio() + "," + listaViajes.get(k).getCoordY_inicio() + ", Fin= " + listaViajes.get(k).getCoordX_fin() + "," + listaViajes.get(k).getCoordY_fin() + ", cantidad = " + listaViajes.get(k).getCantidad() + ", distancia = " + listaViajes.get(k).getDistanciaTotal() + ", tiempo = " + listaViajes.get(k).getTiempoTotal());
+                }
+            }
         }
+
     }
 
     public static void main(String[] args) throws Exception{
@@ -64,10 +75,10 @@ public class Main {
             camiones.add(new Camion(centros.get(i).getCoordX(), centros.get(i).getCoordY()));
         }
 
-        estado_inicial = new Estado(camiones);
-        estado_inicial.crearEstadoInicial(0); // 0, 1 o 2 dependiendo de la función que queramos usar, 0 es ninguna función.
+        estado_inicial = new Estado(camiones);// 0, 1 o 2 dependiendo de la función que queramos usar, 0 es ninguna función.
 
-        GasolinaBoard board = new GasolinaBoard(estado_inicial);
+    GasolinaBoard board = new GasolinaBoard(estado_inicial, gasolineras, centros);
+        board.crearEstadoInicial(1);
         escribirEstado();
         // Create the Problem object
         Problem p = new  Problem(board,
