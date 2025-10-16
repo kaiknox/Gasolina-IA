@@ -6,9 +6,11 @@ public class Viaje {
     private int coordY_inicio;
     private int coordX_fin;
     private int coordY_fin;
+    private int diasPendientes; // días pendientes de la petición
 
     private double distanciaTotal;
     private double tiempoTotal;
+    private boolean provisionalReturn = false; // marca si este tramo es un retorno provisional
 
     // En la clase Viaje, lo que se guarda son referencias a las peticiones que ese viaje va a atender.
     // Como las gasolineras y sus peticiones ya están en Main.gasolineras, solo necesitas saber:
@@ -25,18 +27,24 @@ public class Viaje {
         this.tiempoTotal = 0;
     }
 
-    public Viaje(int x1, int y1, int x2, int y2) {
+    public Viaje(int x1, int y1, int x2, int y2, int diasPendientes) {
         this.coordX_inicio = x1;
         this.coordY_inicio = y1;
         this.coordX_fin = x2;
         this.coordY_fin = y2;
         this.distanciaTotal = distancia(x1, y1, x2, y2);
+        this.diasPendientes = diasPendientes;
         this.tiempoTotal = tiempo(x1, y1, x2, y2);
     }
 
+    /** Constructor que permite marcar el tramo como provisional (retorno provisional). */
+    public Viaje(int x1, int y1, int x2, int y2, int diasPendientes, boolean provisionalReturn) {
+        this(x1, y1, x2, y2, diasPendientes);
+        this.provisionalReturn = provisionalReturn;
+    }
+
     public int getDiasPendientes() {
-        // No sé cómo implementarlo ahora mismo pero habría que saber los días pendientes de la petición para calcular el beneficio.
-        return 0; // Placeholder
+        return diasPendientes;
     }
 
     // Métodos útiles
@@ -63,6 +71,10 @@ public class Viaje {
 
     public double getCantidad() {
         return (1000*((100-Math.pow(2,getDiasPendientes()))/100))-(2*distanciaTotal);
+    }
+
+    public boolean isProvisionalReturn() {
+        return provisionalReturn;
     }
 
     public int getCoordX_inicio() {
