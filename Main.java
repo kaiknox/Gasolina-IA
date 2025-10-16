@@ -16,14 +16,9 @@ import java.util.List;
 import java.util.Properties;
 import aima.search.informed.HillClimbingSearch;
 import aima.search.informed.SimulatedAnnealingSearch;
-
 import IA.Gasolina.Gasolinera;
 import IA.Gasolina.Distribucion;
-import IA.Gasolina.Gasolineras;
-import IA.Gasolina.CentrosDistribucion;
 import IA.Gasolina.Camion;
-
-import java.util.List;
 import java.util.ArrayList;
 
 
@@ -31,12 +26,13 @@ public class Main {
 
     public static List<Gasolinera> gasolineras;
     public static List<Distribucion> centros;
+    public static Estado estado_inicial;
 
     public static int numGasolineras = 10;
     public static int numCentros = 10;
     public static int seed = 12345;
 
-    public void escribirEstado() {
+    public static void escribirEstado() {
 
         System.out.println("---------- Coordenadas de las Gasolineras ----------");
 
@@ -51,28 +47,28 @@ public class Main {
         }
 
         System.out.println("---------- Coordenadas de los Camiones ----------");
-
-        // for(int i = 0; i < camiones.size(); ++i) {
-        //     System.out.println("Camiones " + i + ": " + camiones.get(i).getCoordX() + ", " + centros.get(i).getCoordY());
-        // }
+        List<Camion> camiones = estado_inicial.getCamiones();
+        for(int i = 0; i < camiones.size(); ++i) {
+            System.out.println("Camiones " + i + ": " + camiones.get(i).getCoordX() + ", " + camiones.get(i).getCoordY());
+        }
     }
 
     public static void main(String[] args) throws Exception{
 
         // Inicializar problema:
         
-        Gasolineras gasolineras = new Gasolineras(numGasolineras, seed);
-        CentrosDistribucion centros = new CentrosDistribucion(numCentros, 1, seed);
+        gasolineras = new Gasolineras(numGasolineras, seed);
+        centros = new CentrosDistribucion(numCentros, 1, seed);
         List<Camion> camiones = new ArrayList<>();
         for(int i = 0; i < numCentros; ++i) {
             camiones.add(new Camion(centros.get(i).getCoordX(), centros.get(i).getCoordY()));
         }
 
-        Estado estado_inicial = new Estado(camiones);
+        estado_inicial = new Estado(camiones);
         estado_inicial.crearEstadoInicial(0); // 0, 1 o 2 dependiendo de la función que queramos usar, 0 es ninguna función.
 
         GasolinaBoard board = new GasolinaBoard(estado_inicial);
-
+        escribirEstado();
         // Create the Problem object
         Problem p = new  Problem(board,
                                 new GasolinaSuccesorFunction(),
@@ -96,7 +92,7 @@ public class Main {
 
     }
 
-        private static void printInstrumentation(Properties properties) {
+    private static void printInstrumentation(Properties properties) {
         Iterator keys = properties.keySet().iterator();
         while (keys.hasNext()) {
             String key = (String) keys.next();
@@ -111,8 +107,5 @@ public class Main {
             String action = (String) actions.get(i);
             System.out.println(action);
         }
-
-
-        
     }
 }

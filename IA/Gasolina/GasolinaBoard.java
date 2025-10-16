@@ -1,8 +1,7 @@
 package IA.Gasolina;
 
-import java.util.List;
-import java.util.ArrayList;
 
+import java.util.List;
 /**
  * Board implementation moved/renamed from ProbIA5Board
  */
@@ -30,31 +29,66 @@ public class GasolinaBoard {
         camion.setCoordY(nuevaY);
     }
 
-    public void reasignarPeticion(int idCamionOrigen, int idCamionDestino, int idPeticion) {
+    // Reasigna un viaje de un camion a otro
+    public void reasignarViajes(int idCamionOrigen, int idCamionDestino, int idViaje) {
         Camion camionOrigen = estado_actual.getCamiones().get(idCamionOrigen);
         Camion camionDestino = estado_actual.getCamiones().get(idCamionDestino);
 
-        
+        // Hay que buscar la peticion en el camion origen y eliminarla
+        // Luego añadirla al camion destino
+        List<Viajes> viajesOrigen = camionOrigen.getViajes();
+        List<Viajes> viajesDestino = camionDestino.getViajes();
 
-        Peticion peticion = camionOrigen.removePeticion(idPeticion);
-        camionDestino.addPeticion(peticion);
+        Viajes viajeARemover = viajesOrigen.get(idViaje);
+
+        if (viajeARemover != null) {
+            viajesOrigen.remove(viajeARemover);
+            camionOrigen.setDistanciaRecorrida(camionOrigen.getDistanciaRecorrida() - viajeARemover.getDistanciaTotal());
+            camionOrigen.setHorasTrabajadas(camionOrigen.getHorasTrabajadas() - viajeARemover.getTiempoTotal());
+            viajesDestino.add(viajeARemover);
+        }
     }
 
-    public void intercambiaPeticiones(int idCamionA, int idCamionB, int idPeticionA, int idPeticionB) {
+    // Intercambia dos viajes entre dos camiones
+    public void intercambiaViajes(int idCamionA, int idCamionB, int idViajeA, int idViajeB) {
         Camion camionA = estado_actual.getCamiones().get(idCamionA);
         Camion camionB = estado_actual.getCamiones().get(idCamionB);
 
-        Peticion temp = camionA.popPeticion(idPeticionA);
-        Peticion temp2 = camionB.popPeticion(idPeticionB);
-        camionA.addPeticion(temp2);
-        camionB.addPeticion(temp);
+        List<Viajes> viajesOrigen = camionA.getViajes();
+        List<Viajes> viajesDestino = camionB.getViajes();
+
+        Viajes viajeA = viajesOrigen.get(idViajeA);
+        Viajes viajeB = viajesDestino.get(idViajeB);
+
+        if (viajeA != null && viajeB != null ) {
+            viajesOrigen.remove(viajeA);
+            camionA.setDistanciaRecorrida(camionA.getDistanciaRecorrida() - viajeA.getDistanciaTotal() + viajeB.getDistanciaTotal());
+            camionA.setHorasTrabajadas(camionA.getHorasTrabajadas() - viajeA.getTiempoTotal() + viajeB.getTiempoTotal());
+            viajesDestino.remove(viajeB);
+            camionB.setDistanciaRecorrida(camionB.getDistanciaRecorrida() - viajeB.getDistanciaTotal() + viajeA.getDistanciaTotal());
+            camionB.setHorasTrabajadas(camionB.getHorasTrabajadas() - viajeB.getTiempoTotal() + viajeA.getTiempoTotal());
+            viajesOrigen.add(viajeB);
+            viajesDestino.add(viajeA);
+        }
+
+        
     }
 
-
+    /* Getters and setters */
+    public Estado getEstado_actual() {
+        return estado_actual;
+    }
 
     /* Heuristic function */
 
-    public double heuristic(){ return 0; }
+    public double heuristic(){
+        List<Camion> camiones = estado_actual.getCamiones();
+        double beneficioTotal = 0.0;
+        for (int i=0; i<camiones.size(); i++){
+            beneficioTotal += camiones.get(i).getBeneficio();
+        }
+        return beneficioTotal;
+    }
 
     /* Goal test */
 
@@ -65,10 +99,4 @@ public class GasolinaBoard {
      // Some functions will be needed for creating a copy of the state
 
     /* ^^^^^ TO COMPLETE ^^^^^ */
-
-    private double distancia(int x1, int y1, int x2, int y2) {
-        int dx = x1 - x2;
-        int dy = y1 - y2;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
 }

@@ -11,15 +11,79 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
         ArrayList<Successor> retval = new ArrayList<>();
         GasolinaBoard board = (GasolinaBoard) state;
 
-        for(int i = 0; i < 5; i++){
-            ///GasolinaBoard new_board = new GasolinaBoard(board.getBoard(), board.getSolution());
-            //new_board.flip_it(i);
-            //Successor s = new Successor("flip " + i, new_board);
-            //retval.add(s);
+        Estado estado = board.getEstado_actual();
+        List<Camion> camiones = estado.getCamiones();
+        int n = camiones.size();
+
+        // REASIGNAR: move a Viajes from camion i to camion j (single-step successors)
+        for (int i = 0; i < n; i++) {
+            Camion origen = camiones.get(i);
+            List<Viajes> viajesOrigen = origen.getViajes();
+            if (viajesOrigen == null) continue;
+
+            for (int j = 0; j < n; j++) {
+                if (i == j) continue;
+                Camion destino = camiones.get(j);
+                List<Viajes> viajesDestino = destino.getViajes();
+                if (viajesDestino == null) continue;
+
+                for (int k = 0; k < viajesOrigen.size(); k++) {
+                    // Prune: only consider adding the viaje if the destination truck can accept a trip
+                    if (!destino.puedeAñadirViaje()) continue;
+
+                    Estado estadoCopy = deepCopyEstado(estado);
+                    GasolinaBoard newBoard = new GasolinaBoard(estadoCopy);
+                    newBoard.reasignarViajes(i, j, k);
+                    Successor s = new Successor("Reasignar viaje " + k + " de camión " + i + " a camión " + j, newBoard);
+                    retval.add(s);
+                }
+            }
+        }
+
+        // INTERCAMBIAR: swap viajes between two trucks (single-step successors)
+        for (int a = 0; a < n; a++) {
+            Camion ca = camiones.get(a);
+            List<Viajes> va = ca.getViajes();
+            if (va == null) continue;
+            for (int b = a + 1; b < n; b++) {
+                Camion cb = camiones.get(b);
+                List<Viajes> vb = cb.getViajes();
+                if (vb == null) continue;
+
+                for (int ia = 0; ia < va.size(); ia++) {
+                    for (int ib = 0; ib < vb.size(); ib++) {
+                        Estado estadoCopy = deepCopyEstado(estado);
+                        GasolinaBoard newBoard = new GasolinaBoard(estadoCopy);
+                        newBoard.intercambiaViajes(a, b, ia, ib);
+                        Successor s = new Successor("Intercambiar viaje " + ia + " de camión " + a + " con viaje " + ib + " de camión " + b, newBoard);
+                        retval.add(s);
+                    }
+                }
+            }
         }
 
         return retval;
 
+    }
+
+    // Helper: deep copy Estado by copying camiones and their Viajes lists
+    private Estado deepCopyEstado(Estado original) {
+        List<Camion> newCamiones = new ArrayList<>();
+        for (Camion c : original.getCamiones()) {
+            Camion c2 = new Camion(c.getCoordX(), c.getCoordY());
+            try { c2.setDeposito(c.getDeposito()); } catch (Exception ignored) {}
+
+            List<Viajes> newViajesList = new ArrayList<>();
+            if (c.getViajes() != null) {
+                for (Viajes v : c.getViajes()) {
+                    Viajes v2 = new Viajes(v.getListaViajes());
+                    newViajesList.add(v2);
+                }
+            }
+            c2.setViajes(newViajesList);
+            newCamiones.add(c2);
+        }
+        return new Estado(newCamiones);
     }
 
 }
