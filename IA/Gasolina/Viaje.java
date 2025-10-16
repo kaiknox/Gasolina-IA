@@ -64,4 +64,17 @@ public class Viaje {
     public double getCantidad() {
         return (1000*((100-Math.pow(2,getDiasPendientes()))/100))-(2*distanciaTotal);
     }
+
+    public int getCoordX_inicio() {
+        return coordX_inicio;
+    }   
+    public int getCoordY_inicio() {
+        return coordY_inicio;
+    }
+    public int getCoordX_fin() {
+        return coordX_fin;
+    }
+    public int getCoordY_fin() {
+        return coordY_fin;
+    }
 }

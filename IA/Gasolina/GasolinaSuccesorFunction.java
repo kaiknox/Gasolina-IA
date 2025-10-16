@@ -32,7 +32,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (!destino.puedeAñadirViaje()) continue;
 
                     Estado estadoCopy = deepCopyEstado(estado);
-                    GasolinaBoard newBoard = new GasolinaBoard(estadoCopy);
+                    GasolinaBoard newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
                     newBoard.reasignarViajes(i, j, k);
                     Successor s = new Successor("Reasignar viaje " + k + " de camión " + i + " a camión " + j, newBoard);
                     retval.add(s);
@@ -53,7 +53,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                 for (int ia = 0; ia < va.size(); ia++) {
                     for (int ib = 0; ib < vb.size(); ib++) {
                         Estado estadoCopy = deepCopyEstado(estado);
-                        GasolinaBoard newBoard = new GasolinaBoard(estadoCopy);
+                        GasolinaBoard newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
                         newBoard.intercambiaViajes(a, b, ia, ib);
                         Successor s = new Successor("Intercambiar viaje " + ia + " de camión " + a + " con viaje " + ib + " de camión " + b, newBoard);
                         retval.add(s);
