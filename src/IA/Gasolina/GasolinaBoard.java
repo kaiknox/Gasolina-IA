@@ -274,12 +274,33 @@ public class GasolinaBoard {
         }
 
 
+    public void fusionarViajes(int idCamion, int idViajeA, int idViajeB) {
+        if (idViajeA == idViajeB) return; // no fusionar el mismo viaje
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        List<Viajes> viajes = camion.getViajes();
+        if (idViajeA >= viajes.size() || idViajeB >= viajes.size()) return; // índices inválidos
 
+        Viajes viajeA = viajes.get(idViajeA);
+        Viajes viajeB = viajes.get(idViajeB);
+        // Verificar si la fusión es posible (capacidad)
+        int totalPeticiones = viajeA.getListaViajes().size() + viajeB.getListaViajes().size();
+        if (totalPeticiones > 3) return; // no se puede fusionar  
 
-
-
-
-
+        // Realizar la fusión
+        viajeA.getListaViajes().addAll(viajeB.getListaViajes());
+        viajeA.setDistanciaTotal(viajeA.getDistanciaTotal() + viajeB.getDistanciaTotal());
+        viajeA.setTiempoTotal(viajeA.getTiempoTotal() + viajeB.getTiempoTotal());
+        // Eliminar el viaje B
+        viajes.remove(idViajeB);
+        // Actualizar totales del camión
+        double suma = 0.0, sumaT = 0.0;
+        for (Viajes v : viajes) {
+            suma += v.getDistanciaTotal();
+            sumaT += v.getTiempoTotal();
+        }
+        camion.setDistanciaRecorrida(suma);
+        camion.setHorasTrabajadas(sumaT);
+    }
 
     // FUNCIONES AUXILIARES
     
