@@ -102,7 +102,11 @@ public class GasolinaBoard {
 
      // Some functions will be needed for creating a copy of the state
 
-    /* ^^^^^ TO COMPLETE ^^^^^ */
+
+
+
+
+
     public void crearEstadoInicial(int funcionAescoger) {
         if(funcionAescoger == 1) {
             crearEstadoInicial1();
@@ -149,11 +153,10 @@ public class GasolinaBoard {
 
     private void crearEstadoInicial2() {
         // Strategy 2: round-robin assign requests across trucks
-        List<Camion> camiones = estado_actual.getCamiones();
-        if (gasolineras == null || gasolineras.isEmpty() || camiones == null || camiones.isEmpty()) return;
+        if (gasolineras == null || gasolineras.isEmpty() || estado_actual.getCamiones() == null || estado_actual.getCamiones().isEmpty()) return;
 
         int camionIndex = 0;
-        int nCamiones = camiones.size();
+        int nCamiones = estado_actual.getCamiones().size();
 
         for (int gIndex = 0; gIndex < gasolineras.size(); gIndex++) {
             Gasolinera g = gasolineras.get(gIndex);
@@ -161,11 +164,12 @@ public class GasolinaBoard {
             if (peticiones == null) continue;
 
             for (int d = 0; d < peticiones.size(); d++) {
-                camiones.get(camionIndex).addPeticion(g, d);
+                estado_actual.getCamiones().get(camionIndex).addPeticion(g, d);
                 camionIndex = (camionIndex + 1) % nCamiones;
             }
         }
     }
+
 
     private double distancia(int x1, int y1, int x2, int y2) {
         int dx = x1 - x2;
