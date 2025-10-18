@@ -3,14 +3,16 @@
 # Fecha: $(shell date)
 
 # Variables
-JAVA_FILES = Main.java IA/Gasolina/*.java
 JAR_FILE = Gasolina.jar
 MAIN_CLASS = Main
+BIN_DIR = bin
+SRC_DIR = src
+JAVA_FILES = ${SRC_DIR}/Main.java ${SRC_DIR}/IA/Gasolina/*.java
 
 # JAR libraries: auto-detect .jar files in the project root so the
 # Makefile knows which libraries belong to the project. You can still
 # add explicit jars if needed; by default we pick up all *.jar here.
-JAR_LIBS := $(wildcard *.jar)
+JAR_LIBS := $(wildcard lib/*.jar)
 # Ensure Gasolina.jar is present in the list and prefer it last (optional)
 ifeq (,$(filter $(JAR_FILE),$(JAR_LIBS)))
 JAR_LIBS += $(JAR_FILE)
@@ -27,13 +29,14 @@ RM_WIN = del /Q
 # Build CLASSPATH for Unix and Windows
 empty :=
 space := $(empty) $(empty)
-CLASSPATH = .$(SEP)$(subst $(space),$(SEP),$(JAR_LIBS))
+CLASSPATH = $(BIN_DIR):$(SRC_DIR):$(subst $(space),:, $(JAR_LIBS))
+
 CLASSPATH_WIN = .$(SEP_WIN)$(subst $(space),$(SEP_WIN),$(JAR_LIBS))
 
 # Compilador y flags
 JAVAC = javac
 JAVA = java
-JAVAC_FLAGS = -cp $(CLASSPATH)
+JAVAC_FLAGS = -cp $(CLASSPATH) -d $(BIN_DIR)
 JAVA_FLAGS = -cp $(CLASSPATH)
 
 # Regla por defecto
@@ -42,6 +45,7 @@ all: compile
 # Compilar el proyecto (compila todos los .java listados en JAVA_FILES)
 compile:
 	@echo "Compilando archivos Java..."
+	@mkdir -p $(BIN_DIR)
 	$(JAVAC) $(JAVAC_FLAGS) $(JAVA_FILES)
 	@echo "Compilación completada."
 
@@ -72,7 +76,7 @@ run-jar:
 # Limpiar archivos compilados
 clean:
 	@echo "Limpiando archivos compilados..."
-	$(RM) *.class 2>nul || true
+	$(RM) $(BIN_DIR)/*.class 2>nul || true
 	@echo "Limpieza completada."
 
 # Limpiar en Windows (PowerShell/cmd)
