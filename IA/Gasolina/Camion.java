@@ -83,11 +83,39 @@ public class Camion {
         this.horasTrabajadas = horasTrabajadas;
     }
 
-    public double getBeneficio(){
+    /*  public double getBeneficio(){
         double beneficioTotal = 0;
         for(int i=0; i < viajesCamion.size(); i++){
             beneficioTotal += viajesCamion.get(i).getCantidad();
         }
+        return beneficioTotal;
+    } */    //funcion anterior para comparar
+
+    public double getBeneficio(){
+        double beneficioTotal = 0.0;
+        final double PRECIO_BASE = 100.0; // precio base por depósito (ajusta si tienes otro valor)
+        
+        for (Viajes viajesGrupo : viajesCamion) {
+            if (viajesGrupo == null) continue;
+            
+            // Cada viaje dentro del grupo de viajes tiene sus días pendientes
+            for (Viaje viaje : viajesGrupo.getListaViajes()) {
+                int diasPendientes = viaje.getDiasPendientes(); // asume que Viaje tiene este getter
+                
+                double porcentajePrecio;
+                if (diasPendientes == 0) {
+                    porcentajePrecio = 102.0; // 102%
+                } else {
+                    porcentajePrecio = 100.0 - (2.0 * diasPendientes); // (100 - 2×días)%
+                    // Protección: si los días son muchos, el porcentaje puede ser negativo
+                    if (porcentajePrecio < 0) porcentajePrecio = 0;
+                }
+                
+                // Beneficio = precio_base × (porcentaje / 100)
+                beneficioTotal += PRECIO_BASE * (porcentajePrecio / 100.0);
+            }
+        }
+        
         return beneficioTotal;
     }
 

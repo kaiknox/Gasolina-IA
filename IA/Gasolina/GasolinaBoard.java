@@ -1,6 +1,7 @@
 package IA.Gasolina;
 
 import java.util.List;
+import java.util.ArrayList;
 import IA.Gasolina.Gasolinera;
 import IA.Gasolina.Distribucion;
 /**
@@ -27,55 +28,272 @@ public class GasolinaBoard {
     }
 
     /* OPERADORES */
-    public void moverCamion(int idCamion, int nuevaX, int nuevaY) {
-        Camion camion = estado_actual.getCamiones().get(idCamion);
-        camion.setCoordX(nuevaX);
-        camion.setCoordY(nuevaY);
-    }
+
 
     // Reasigna un viaje de un camion a otro
+    /**
+     * Reasigna UNA petición (primera encontrada en el viaje especificado) del camión origen al destino.
+     * Regenera los Viajes de ambos camiones desde cero.
+     */
     public void reasignarViajes(int idCamionOrigen, int idCamionDestino, int idViaje) {
+        if (idCamionOrigen == idCamionDestino) return; // no hace nada si son el mismo
+        
         Camion camionOrigen = estado_actual.getCamiones().get(idCamionOrigen);
         Camion camionDestino = estado_actual.getCamiones().get(idCamionDestino);
-
-        // Hay que buscar la peticion en el camion origen y eliminarla
-        // Luego añadirla al camion destino
+        
         List<Viajes> viajesOrigen = camionOrigen.getViajes();
-        List<Viajes> viajesDestino = camionDestino.getViajes();
-
-        Viajes viajeARemover = viajesOrigen.get(idViaje);
-
-        if (viajeARemover != null) {
-            viajesOrigen.remove(viajeARemover);
-            camionOrigen.setDistanciaRecorrida(camionOrigen.getDistanciaRecorrida() - viajeARemover.getDistanciaTotal());
-            camionOrigen.setHorasTrabajadas(camionOrigen.getHorasTrabajadas() - viajeARemover.getTiempoTotal());
-            viajesDestino.add(viajeARemover);
+        if (idViaje >= viajesOrigen.size()) return; // índice inválido
+        
+        Viajes viajeGrupo = viajesOrigen.get(idViaje);
+        if (viajeGrupo == null || viajeGrupo.getListaViajes().isEmpty()) return;
+        
+        // Encontrar la primera gasolinera en este Viajes (ignorar tramos de retorno)
+        Gasolinera gasolineraAMover = null;
+        int indicePeticion = -1;
+        
+        for (Viaje tramo : viajeGrupo.getListaViajes()) {
+            if (tramo.isProvisionalReturn()) continue; // ignorar retornos
+            
+            // Buscar esta coordenada en la lista global de gasolineras
+            for (int g = 0; g < gasolineras.size(); g++) {
+                Gasolinera gas = gasolineras.get(g);
+                if (gas.getCoordX() == tramo.getCoordX_fin() && gas.getCoordY() == tramo.getCoordY_fin()) {
+                    gasolineraAMover = gas;
+                    // Asumir que es la primera petición de esta gasolinera en este viaje
+                    indicePeticion = 0; // simplificación: tomamos la primera petición
+                    break;
+                }
+            }
+            if (gasolineraAMover != null) break; // encontramos una
         }
+        
+        if (gasolineraAMover == null || indicePeticion < 0) return;
+        
+        // Reconstruir ambos camiones desde cero
+        reconstruirCamionSinPeticion(camionOrigen, gasolineraAMover, indicePeticion);
+        agregarPeticionACamion(camionDestino, gasolineraAMover, indicePeticion);
     }
 
-    // Intercambia dos viajes entre dos camiones
+    /**
+     * Intercambia dos peticiones entre dos camiones diferentes.
+     * Extrae las peticiones, las intercambia, y reconstruye ambos camiones.
+     */
     public void intercambiaViajes(int idCamionA, int idCamionB, int idViajeA, int idViajeB) {
+        if (idCamionA == idCamionB) return; // no intercambiar del mismo camión
+        
         Camion camionA = estado_actual.getCamiones().get(idCamionA);
         Camion camionB = estado_actual.getCamiones().get(idCamionB);
 
-        List<Viajes> viajesOrigen = camionA.getViajes();
-        List<Viajes> viajesDestino = camionB.getViajes();
+        List<Viajes> viajesA = camionA.getViajes();
+        List<Viajes> viajesB = camionB.getViajes();
+        
+        if (idViajeA >= viajesA.size() || idViajeB >= viajesB.size()) return;
 
-        Viajes viajeA = viajesOrigen.get(idViajeA);
-        Viajes viajeB = viajesDestino.get(idViajeB);
+        Viajes viajeGrupoA = viajesA.get(idViajeA);
+        Viajes viajeGrupoB = viajesB.get(idViajeB);
+        
+        if (viajeGrupoA == null || viajeGrupoB == null) return;
+        
+        // Encontrar primera gasolinera de cada Viajes
+        Gasolinera gasA = null, gasB = null;
+        int indiceA = 0, indiceB = 0;
+        
+        for (Viaje tramo : viajeGrupoA.getListaViajes()) {
+            if (!tramo.isProvisionalReturn()) {
+                for (Gasolinera g : gasolineras) {
+                    if (g.getCoordX() == tramo.getCoordX_fin() && g.getCoordY() == tramo.getCoordY_fin()) {
+                        gasA = g;
+                        break;
+                    }
+                }
+                if (gasA != null) break;
+            }
+        }
+        
+        for (Viaje tramo : viajeGrupoB.getListaViajes()) {
+            if (!tramo.isProvisionalReturn()) {
+                for (Gasolinera g : gasolineras) {
+                    if (g.getCoordX() == tramo.getCoordX_fin() && g.getCoordY() == tramo.getCoordY_fin()) {
+                        gasB = g;
+                        break;
+                    }
+                }
+                if (gasB != null) break;
+            }
+        }
+        
+        if (gasA == null || gasB == null) return;
+        
+        // Reconstruir ambos camiones intercambiando las peticiones
+        List<PeticionInfo> peticionesA = extraerPeticiones(camionA);
+        List<PeticionInfo> peticionesB = extraerPeticiones(camionB);
+        
+        // Eliminar las peticiones a intercambiar
+        PeticionInfo petA = null, petB = null;
+        for (PeticionInfo p : peticionesA) {
+            if (p.gasolinera == gasA && p.indicePeticion == indiceA) {
+                petA = p;
+                break;
+            }
+        }
+        for (PeticionInfo p : peticionesB) {
+            if (p.gasolinera == gasB && p.indicePeticion == indiceB) {
+                petB = p;
+                break;
+            }
+        }
+        
+        if (petA == null || petB == null) return;
+        
+        peticionesA.remove(petA);
+        peticionesB.remove(petB);
+        peticionesA.add(petB);
+        peticionesB.add(petA);
+        
+        // Reconstruir camiones
+        reconstruirCamionConPeticiones(camionA, peticionesA);
+        reconstruirCamionConPeticiones(camionB, peticionesB);
+    }
 
-        if (viajeA != null && viajeB != null ) {
-            viajesOrigen.remove(viajeA);
-            camionA.setDistanciaRecorrida(camionA.getDistanciaRecorrida() - viajeA.getDistanciaTotal() + viajeB.getDistanciaTotal());
-            camionA.setHorasTrabajadas(camionA.getHorasTrabajadas() - viajeA.getTiempoTotal() + viajeB.getTiempoTotal());
-            viajesDestino.remove(viajeB);
-            camionB.setDistanciaRecorrida(camionB.getDistanciaRecorrida() - viajeB.getDistanciaTotal() + viajeA.getDistanciaTotal());
-            camionB.setHorasTrabajadas(camionB.getHorasTrabajadas() - viajeB.getTiempoTotal() + viajeA.getTiempoTotal());
-            viajesOrigen.add(viajeB);
-            viajesDestino.add(viajeA);
+    /**
+     * Invierte el orden de visita de las gasolineras en un viaje concreto de un camión.
+     * Solo aplica si el viaje tiene exactamente dos gasolineras (tramos no provisionales).
+     */
+    public void invertirOrdenViaje(int idCamion, int idViaje) {
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        List<Viajes> viajes = camion.getViajes();
+        if (idViaje >= viajes.size()) return;
+        Viajes viajeGrupo = viajes.get(idViaje);
+        List<Viaje> tramos = viajeGrupo.getListaViajes();
+        // Buscar los dos tramos de gasolinera (no provisionales)
+        List<Viaje> gasTramos = new ArrayList<>();
+        for (Viaje v : tramos) {
+            if (!v.isProvisionalReturn()) {
+                gasTramos.add(v);
+            }
+        }
+        if (gasTramos.size() != 2) return; // solo si hay dos gasolineras
+
+        // Invertir el orden
+        Viaje primero = gasTramos.get(0);
+        Viaje segundo = gasTramos.get(1);
+
+        // Reconstruir el viaje: centro -> segundo -> primero -> centro
+        int cx = camion.getCoordX();
+        int cy = camion.getCoordY();
+        int d1 = segundo.getDiasPendientes();
+        int d2 = primero.getDiasPendientes();
+        // Tramo 1: centro -> segunda gasolinera
+        Viaje tramo1 = new Viaje(cx, cy, segundo.getCoordX_fin(), segundo.getCoordY_fin(), d1);
+        // Tramo 2: segunda -> primera gasolinera
+        Viaje tramo2 = new Viaje(segundo.getCoordX_fin(), segundo.getCoordY_fin(), primero.getCoordX_fin(), primero.getCoordY_fin(), d2);
+        // Tramo 3: primera gasolinera -> centro
+        Viaje tramo3 = new Viaje(primero.getCoordX_fin(), primero.getCoordY_fin(), cx, cy, d2, true);
+
+        // Actualizar el objeto Viajes
+        List<Viaje> nuevoOrden = new ArrayList<>();
+        nuevoOrden.add(tramo1);
+        nuevoOrden.add(tramo2);
+        nuevoOrden.add(tramo3);
+        viajeGrupo.getListaViajes().clear();
+        viajeGrupo.getListaViajes().addAll(nuevoOrden);
+
+        // Recalcular distancia y tiempo
+        double nuevaDist = tramo1.getDistanciaTotal() + tramo2.getDistanciaTotal() + tramo3.getDistanciaTotal();
+        double nuevoTiempo = tramo1.getTiempoTotal() + tramo2.getTiempoTotal() + tramo3.getTiempoTotal();
+        viajeGrupo.setDistanciaTotal(nuevaDist);
+        viajeGrupo.setTiempoTotal(nuevoTiempo);
+
+        // Actualizar totales del camión
+        double suma = 0.0, sumaT = 0.0;
+        for (Viajes v : viajes) {
+            suma += v.getDistanciaTotal();
+            sumaT += v.getTiempoTotal();
+        }
+        camion.setDistanciaRecorrida(suma);
+        camion.setHorasTrabajadas(sumaT);
+    }
+
+        /**
+         * Mueve una petición (tramo no provisional) de un viaje a otro dentro del mismo camión.
+         * idxPeticion es el índice dentro de los tramos no provisionales del viaje origen.
+         */
+        public void moverPeticionEntreViajes(int idCamion, int idViajeOrigen, int idxPeticion, int idViajeDestino) {
+            Camion camion = estado_actual.getCamiones().get(idCamion);
+            List<Viajes> viajes = camion.getViajes();
+            if (idViajeOrigen >= viajes.size() || idViajeDestino >= viajes.size() || idViajeOrigen == idViajeDestino) return;
+            Viajes origen = viajes.get(idViajeOrigen);
+            Viajes destino = viajes.get(idViajeDestino);
+            List<Viaje> tramosOrigen = origen.getListaViajes();
+            // Buscar los tramos no provisionales en origen
+            ArrayList<Integer> indicesNoProvisionales = new ArrayList<>();
+            for (int i = 0; i < tramosOrigen.size(); i++) {
+                if (!tramosOrigen.get(i).isProvisionalReturn()) indicesNoProvisionales.add(i);
+            }
+            if (idxPeticion >= indicesNoProvisionales.size()) return;
+            int idxTramo = indicesNoProvisionales.get(idxPeticion);
+            Viaje tramoMover = tramosOrigen.get(idxTramo);
+
+            // Eliminar el tramo del viaje origen
+            tramosOrigen.remove(idxTramo);
+            // Recalcular distancia/tiempo del viaje origen
+            double distO = 0.0, tiempoO = 0.0;
+            for (Viaje v : tramosOrigen) {
+                distO += v.getDistanciaTotal();
+                tiempoO += v.getTiempoTotal();
+            }
+            origen.setDistanciaTotal(distO);
+            origen.setTiempoTotal(tiempoO);
+
+            // Intentar añadir el tramo al viaje destino
+            if (destino.puedeAñadir()) {
+                destino.getListaViajes().add(tramoMover);
+                // Recalcular distancia/tiempo del viaje destino
+                double distD = 0.0, tiempoD = 0.0;
+                for (Viaje v : destino.getListaViajes()) {
+                    distD += v.getDistanciaTotal();
+                    tiempoD += v.getTiempoTotal();
+                }
+                destino.setDistanciaTotal(distD);
+                destino.setTiempoTotal(tiempoD);
+            } else {
+                // Si no cabe, devolver el tramo al origen
+                tramosOrigen.add(idxTramo, tramoMover);
+                origen.setDistanciaTotal(distO + tramoMover.getDistanciaTotal());
+                origen.setTiempoTotal(tiempoO + tramoMover.getTiempoTotal());
+            }
+
+            // Actualizar totales del camión
+            double suma = 0.0, sumaT = 0.0;
+            for (Viajes v : viajes) {
+                suma += v.getDistanciaTotal();
+                sumaT += v.getTiempoTotal();
+            }
+            camion.setDistanciaRecorrida(suma);
+            camion.setHorasTrabajadas(sumaT);
         }
 
+
+
+
+
+
+
+
+
+    // FUNCIONES AUXILIARES
+    
+    /**
+     * Reconstruye un camión con una lista específica de peticiones
+     */
+    private void reconstruirCamionConPeticiones(Camion camion, List<PeticionInfo> peticiones) {
+        camion.getViajes().clear();
+        camion.setDistanciaRecorrida(0.0);
+        camion.setHorasTrabajadas(0.0);
         
+        for (PeticionInfo p : peticiones) {
+            camion.addPeticion(p.gasolinera, p.indicePeticion);
+        }
     }
 
     /* Getters and setters */
@@ -88,15 +306,25 @@ public class GasolinaBoard {
     public double heuristic(){
         List<Camion> camiones = estado_actual.getCamiones();
         double beneficioTotal = 0.0;
+        double distanciaTotal = 0.0;
         for (int i=0; i<camiones.size(); i++){
             beneficioTotal += camiones.get(i).getBeneficio();
+            distanciaTotal += camiones.get(i).getDistanciaRecorrida();
         }
-        return beneficioTotal;
+        
+        // Hill Climbing MINIMIZA la heurística, así que:
+        // heurística = distancia - beneficio
+        // (queremos MINIMIZAR distancia y MAXIMIZAR beneficio)
+        double lambda = 0.5; // peso para la distancia
+        double heuristica = distanciaTotal - (beneficioTotal / lambda);
+        
+        System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
+        return heuristica;
     }
 
     /* Goal test */
 
-     public boolean is_goal(){ return true; } // --------------- no se si hace falta
+     public boolean is_goal(){ return false; } // --------------- no se si hace falta
 
      /* auxiliary functions */
 
@@ -175,6 +403,87 @@ public class GasolinaBoard {
         int dx = x1 - x2;
         int dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * Reconstruye un camión eliminando una petición específica.
+     * Extrae todas las peticiones actuales, elimina la especificada, y reconstruye desde cero.
+     */
+    private void reconstruirCamionSinPeticion(Camion camion, Gasolinera gasolineraAEliminar, int indicePeticionAEliminar) {
+        // Extraer todas las peticiones actuales del camión
+        List<PeticionInfo> peticionesActuales = extraerPeticiones(camion);
+        
+        // Eliminar la petición especificada
+        PeticionInfo aEliminar = null;
+        for (PeticionInfo p : peticionesActuales) {
+            if (p.gasolinera == gasolineraAEliminar && p.indicePeticion == indicePeticionAEliminar) {
+                aEliminar = p;
+                break;
+            }
+        }
+        if (aEliminar != null) {
+            peticionesActuales.remove(aEliminar);
+        }
+        
+        // Limpiar el camión y reconstruir
+        camion.getViajes().clear();
+        camion.setDistanciaRecorrida(0.0);
+        camion.setHorasTrabajadas(0.0);
+        
+        // Re-agregar todas las peticiones restantes
+        for (PeticionInfo p : peticionesActuales) {
+            camion.addPeticion(p.gasolinera, p.indicePeticion);
+        }
+    }
+    
+    /**
+     * Agrega una petición a un camión (simplemente llama a addPeticion)
+     */
+    private void agregarPeticionACamion(Camion camion, Gasolinera gasolinera, int indicePeticion) {
+        camion.addPeticion(gasolinera, indicePeticion);
+    }
+    
+    /**
+     * Extrae información de todas las peticiones asignadas a un camión
+     */
+    private List<PeticionInfo> extraerPeticiones(Camion camion) {
+        List<PeticionInfo> result = new ArrayList<>();
+        
+        for (Viajes viajesGrupo : camion.getViajes()) {
+            if (viajesGrupo == null) continue;
+            
+            for (Viaje tramo : viajesGrupo.getListaViajes()) {
+                if (tramo.isProvisionalReturn()) continue; // ignorar retornos
+                
+                // Buscar la gasolinera correspondiente
+                for (int g = 0; g < gasolineras.size(); g++) {
+                    Gasolinera gas = gasolineras.get(g);
+                    if (gas.getCoordX() == tramo.getCoordX_fin() && gas.getCoordY() == tramo.getCoordY_fin()) {
+                        // Simplificación: asumimos índice 0 de petición
+                        // En una implementación completa, necesitarías almacenar el índice en Viaje
+                        result.add(new PeticionInfo(gas, 0, tramo.getDiasPendientes()));
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Clase auxiliar para almacenar información de peticiones
+     */
+    private static class PeticionInfo {
+        Gasolinera gasolinera;
+        int indicePeticion;
+        int diasPendientes;
+        
+        PeticionInfo(Gasolinera g, int idx, int dias) {
+            this.gasolinera = g;
+            this.indicePeticion = idx;
+            this.diasPendientes = dias;
+        }
     }
 
     public List<Gasolinera> getGasolineras() {

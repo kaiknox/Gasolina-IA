@@ -112,4 +112,12 @@ public class Viajes {
         }
         return cantidadTotal;
     }
+
+        // Setters necesarios para el operador de invertir orden
+        public void setDistanciaTotal(double d) {
+            this.distanciaTotal = d;
+        }
+        public void setTiempoTotal(double t) {
+            this.tiempoTotal = t;
+        }
 }

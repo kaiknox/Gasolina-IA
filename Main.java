@@ -37,42 +37,23 @@ public class Main {
     public static int numCentros = 10;
     public static int seed = 12345;
 
-    public void escribirEstado() {
-
-        System.out.println("---------- Coordenadas de las Gasolineras ----------");
-
-        for(int i = 0; i < gasolineras.size(); ++i) {
-            System.out.println("Gasolinera " + i + ": " + gasolineras.get(i).getCoordX() + ", " + gasolineras.get(i).getCoordY());
-        }
-
-        System.out.println("---------- Coordenadas de los Centros ----------");
-
-        for(int i = 0; i < centros.size(); ++i) {
-            System.out.println("Centros " + i + ": " + centros.get(i).getCoordX() + ", " + centros.get(i).getCoordY());
-        }
-
-        System.out.println("---------- Coordenadas de los Camiones ----------");
-
-        // for(int i = 0; i < camiones.size(); ++i) {
-        //     System.out.println("Camiones " + i + ": " + camiones.get(i).getCoordX() + ", " + centros.get(i).getCoordY());
-        // }
-    }
-
     public static void main(String[] args) throws Exception{
 
         // Inicializar problema:
         
-        Gasolineras gasolineras = new Gasolineras(numGasolineras, seed);
-        CentrosDistribucion centros = new CentrosDistribucion(numCentros, 1, seed);
+        Main.gasolineras = new Gasolineras(numGasolineras, seed);
+        Main.centros = new CentrosDistribucion(numCentros, 1, seed);
+        
         List<Camion> camiones = new ArrayList<>();
         for(int i = 0; i < numCentros; ++i) {
-            camiones.add(new Camion(centros.get(i).getCoordX(), centros.get(i).getCoordY()));
+            camiones.add(new Camion(Main.centros.get(i).getCoordX(), Main.centros.get(i).getCoordY()));
         }
 
         Estado estado_inicial = new Estado(camiones);
 
-        GasolinaBoard board = new GasolinaBoard(estado_inicial, gasolineras, centros);
-        board.crearEstadoInicial(0); // 0, 1 o 2 dependiendo de la función que queramos usar, 0 es ninguna función.
+        GasolinaBoard board = new GasolinaBoard(estado_inicial, Main.gasolineras, Main.centros);
+        // CAMBIO: usar 2 (round-robin) para tener un estado inicial peor y que HC pueda mejorar
+        board.crearEstadoInicial(2); // 1 = asignar al más cercano, 2 = round-robin
 
         // Create the Problem object
         Problem p = new  Problem(board,
@@ -97,7 +78,7 @@ public class Main {
 
     }
 
-        private static void printInstrumentation(Properties properties) {
+    private static void printInstrumentation(Properties properties) {
         Iterator keys = properties.keySet().iterator();
         while (keys.hasNext()) {
             String key = (String) keys.next();

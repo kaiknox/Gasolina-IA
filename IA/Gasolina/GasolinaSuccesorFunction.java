@@ -62,6 +62,57 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
             }
         }
 
+        // INVERTIR ORDEN: para cada viaje con dos gasolineras, invierte el orden
+        for (int i = 0; i < n; i++) {
+            Camion camion = camiones.get(i);
+            List<Viajes> viajes = camion.getViajes();
+            if (viajes == null) continue;
+            for (int k = 0; k < viajes.size(); k++) {
+                Viajes v = viajes.get(k);
+                // Solo si el viaje tiene exactamente dos gasolineras (tramos no provisionales)
+                int countGas = 0;
+                for (Viaje tramo : v.getListaViajes()) {
+                    if (!tramo.isProvisionalReturn()) countGas++;
+                }
+                if (countGas == 2) {
+                    Estado estadoCopy = deepCopyEstado(estado);
+                    GasolinaBoard newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
+                    newBoard.invertirOrdenViaje(i, k);
+                    Successor s = new Successor("Invertir orden viaje " + k + " de camión " + i, newBoard);
+                    retval.add(s);
+                }
+            }
+        }
+
+        // MOVER PETICIÓN ENTRE VIAJES: para cada camión, mueve cada petición de un viaje a otro viaje del mismo camión
+        for (int i = 0; i < n; i++) {
+            Camion camion = camiones.get(i);
+            List<Viajes> viajes = camion.getViajes();
+            if (viajes == null || viajes.size() < 2) continue; // necesita al menos dos viajes
+
+            for (int origen = 0; origen < viajes.size(); origen++) {
+                Viajes vOrigen = viajes.get(origen);
+                // Buscar tramos no provisionales en el viaje origen
+                ArrayList<Integer> indicesNoProvisionales = new ArrayList<>();
+                for (int idx = 0; idx < vOrigen.getListaViajes().size(); idx++) {
+                    if (!vOrigen.getListaViajes().get(idx).isProvisionalReturn()) indicesNoProvisionales.add(idx);
+                }
+                if (indicesNoProvisionales.size() == 0) continue;
+
+                for (int destino = 0; destino < viajes.size(); destino++) {
+                    if (origen == destino) continue;
+                    for (int idxPeticion = 0; idxPeticion < indicesNoProvisionales.size(); idxPeticion++) {
+                        Estado estadoCopy = deepCopyEstado(estado);
+                        GasolinaBoard newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
+                        newBoard.moverPeticionEntreViajes(i, origen, idxPeticion, destino);
+                        Successor s = new Successor("Mover petición " + idxPeticion + " de viaje " + origen + " a viaje " + destino + " en camión " + i, newBoard);
+                        retval.add(s);
+                    }
+                }
+            }
+        }
+
+        System.out.println("[DEBUG] Vecinos generados: " + retval.size());
         return retval;
 
     }
@@ -72,6 +123,10 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
         for (Camion c : original.getCamiones()) {
             Camion c2 = new Camion(c.getCoordX(), c.getCoordY());
             try { c2.setDeposito(c.getDeposito()); } catch (Exception ignored) {}
+            
+            // IMPORTANTE: copiar distancia y horas
+            c2.setDistanciaRecorrida(c.getDistanciaRecorrida());
+            c2.setHorasTrabajadas(c.getHorasTrabajadas());
 
             List<Viajes> newViajesList = new ArrayList<>();
             if (c.getViajes() != null) {
