@@ -11,6 +11,5 @@
 *.ear
 
 # IDE
-.vscode/
 .idea/
 *.iml

@@ -381,34 +381,56 @@ public class GasolinaBoard {
         }
 
 
+    
     public void fusionarViajes(int idCamion, int idViajeA, int idViajeB) {
-        if (idViajeA == idViajeB) return; // no fusionar el mismo viaje
+        if (idViajeA == idViajeB)
+            return;
+
         Camion camion = estado_actual.getCamiones().get(idCamion);
+        if (camion == null)
+            return;
+
         List<Viajes> viajes = camion.getViajes();
-        if (idViajeA >= viajes.size() || idViajeB >= viajes.size()) return; // índices inválidos
+        if (idViajeA >= viajes.size() || idViajeB >= viajes.size())
+            return;
 
         Viajes viajeA = viajes.get(idViajeA);
         Viajes viajeB = viajes.get(idViajeB);
-        // Verificar si la fusión es posible (capacidad)
-        int totalPeticiones = viajeA.getListaViajes().size() + viajeB.getListaViajes().size();
-        if (totalPeticiones > 3) return; // no se puede fusionar  
 
-        // Realizar la fusión
-        viajeA.getListaViajes().addAll(viajeB.getListaViajes());
+        List<Viaje> listaA = viajeA.getListaViajes();
+        List<Viaje> listaB = viajeB.getListaViajes();
+
+        // Validar que no se excede la capacidad
+        int totalViaje = (listaA.size() - 2) + (listaB.size() - 2);
+        if (totalViaje > 2)
+            return; // máximo 2 depósitos (entre start y return)
+
+        // Insertar middle of B into A just before the return trip of A
+        int insertPos = listaA.size() - 1;
+
+        // Excluir primer elemento de B (start) y último (return)
+        for (int i = 1; i < listaB.size() - 1; i++) {
+            listaA.add(insertPos, listaB.get(i));
+            insertPos++;
+        }
+
+        // Actualizar distancia y tiempo totales
         viajeA.setDistanciaTotal(viajeA.getDistanciaTotal() + viajeB.getDistanciaTotal());
         viajeA.setTiempoTotal(viajeA.getTiempoTotal() + viajeB.getTiempoTotal());
-        // Eliminar el viaje B
-        viajes.remove(idViajeB);
-        // Actualizar totales del camión
-        double suma = 0.0, sumaT = 0.0;
-        for (Viajes v : viajes) {
-            suma += v.getDistanciaTotal();
-            sumaT += v.getTiempoTotal();
-        }
-        camion.setDistanciaRecorrida(suma);
-        camion.setHorasTrabajadas(sumaT);
-    }
 
+        // Eliminar viaje B del camión
+        viajes.remove(idViajeB);
+
+        // Recalcular totales del camión
+        double sumaDist = 0.0;
+        double sumaTiempo = 0.0;
+        for (Viajes v : viajes) {
+            sumaDist += v.getDistanciaTotal();
+            sumaTiempo += v.getTiempoTotal();
+        }
+        camion.setDistanciaRecorrida(sumaDist);
+        camion.setHorasTrabajadas(sumaTiempo);
+    }
     // FUNCIONES AUXILIARES
     
     /**
