@@ -446,6 +446,7 @@ public class GasolinaBoard {
         }
     }
 
+
     /* Getters and setters */
     public Estado getEstado_actual() {
         return estado_actual;
@@ -642,5 +643,60 @@ public class GasolinaBoard {
 
     public List<Distribucion> getCentros() {
         return centros;
+    }
+
+    //CONSULTORAS
+
+    public void escribirEstadoActual() {
+        System.out.println("Estado actual del GasolinaBoard:");
+        List<Camion> camiones = estado_actual.getCamiones();
+        for (int i = 0; i < camiones.size(); i++) {
+            Camion camion = camiones.get(i);
+            System.out.println("Camión " + i + ":");
+            System.out.println("  Distancia recorrida: " + camion.getDistanciaRecorrida());
+            System.out.println("  Horas trabajadas: " + camion.getHorasTrabajadas());
+            List<Viajes> viajes = camion.getViajes();
+            for (int j = 0; j < viajes.size(); j++) {
+                Viajes viajeGrupo = viajes.get(j);
+                System.out.println("    Viaje " + j + ":");
+                System.out.println("      Distancia total: " + viajeGrupo.getDistanciaTotal());
+                System.out.println("      Tiempo total: " + viajeGrupo.getTiempoTotal());
+                List<Viaje> tramos = viajeGrupo.getListaViajes();
+                for (int k = 0; k < tramos.size(); k++) {
+                    Viaje tramo = tramos.get(k);
+                    System.out.println("        Tramo " + k + ": (" + tramo.getCoordX_inicio() + "," + tramo.getCoordY_inicio() + ") -> (" + tramo.getCoordX_fin() + "," + tramo.getCoordY_fin() + "), Días pendientes: " + tramo.getDiasPendientes() + (tramo.isProvisionalReturn() ? " [Retorno Provisional]" : ""));
+                }
+            }
+        }
+    }
+
+    /**
+     * Calcula el beneficio: suma de lo ganado por peticiones atendidas menos el coste de los kilómetros recorridos.
+     * Ganancia: para cada petición atendida, según días pendientes.
+     * Coste: distancia total recorrida * coste por km (2).
+     */
+    public double calcularBeneficio() {
+        double ganancia = 0.0;
+        double distanciaTotal = 0.0;
+        List<Camion> camiones = estado_actual.getCamiones();
+        for (Camion camion : camiones) {
+            List<Viajes> viajes = camion.getViajes();
+            for (Viajes viajeGrupo : viajes) {
+                List<Viaje> tramos = viajeGrupo.getListaViajes();
+                for (Viaje tramo : tramos) {
+                    if (!tramo.isProvisionalReturn()) {
+                        int dias = tramo.getDiasPendientes();
+                        if (dias == 0) {
+                            ganancia += 1000 * 1.02;
+                        } else {
+                            ganancia += 1000 * ((100.0 - 2.0 * dias) / 100.0);
+                        }
+                    }
+                }
+            }
+            distanciaTotal += camion.getDistanciaRecorrida();
+        }
+        double coste = distanciaTotal * 2.0;
+        return ganancia - coste;
     }
 }

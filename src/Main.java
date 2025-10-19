@@ -52,8 +52,18 @@ public class Main {
         Estado estado_inicial = new Estado(camiones);
 
         GasolinaBoard board = new GasolinaBoard(estado_inicial, Main.gasolineras, Main.centros);
+        
         // CAMBIO: usar 2 (round-robin) para tener un estado inicial peor y que HC pueda mejorar
         board.crearEstadoInicial(2); // 1 = asignar al más cercano, 2 = round-robin
+
+        //double costeInicial = -board.heuristic();
+        //board.escribirEstadoActual();
+
+        GasolinaBoard estadoInicial = board; // tu estado inicial
+        GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
+
+        double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
+        double beneficioInicial = estadoInicial.calcularBeneficio();
 
         // Create the Problem object
         Problem p = new  Problem(board,
@@ -75,6 +85,22 @@ public class Main {
 
         // You can access also to the goal state using the
 	// method getGoalState of class Search
+
+    double costeFinal = -board.heuristic();
+    //board.escribirEstadoActual();
+
+    // System.out.println("Coste inicial: " + costeInicial);
+    // System.out.println("Coste final: " + costeFinal);
+
+    GasolinaBoard estadoFinal = (GasolinaBoard)search.getGoalState(); // el estado final encontrado
+
+    double heuristicaFinal = heuristica.getHeuristicValue(estadoFinal);
+    double beneficioFinal = estadoFinal.calcularBeneficio();
+
+    System.out.println("Heurística inicial: " + heuristicaInicial);
+    System.out.println("Heurística final: " + heuristicaFinal);
+    System.out.println("Beneficio inicial: " + beneficioInicial);
+    System.out.println("Beneficio final: " + beneficioFinal);
 
     }
 
