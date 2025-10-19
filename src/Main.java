@@ -65,6 +65,8 @@ public class Main {
         double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
         double beneficioInicial = estadoInicial.calcularBeneficio();
 
+        long start = System.currentTimeMillis();
+
         // Create the Problem object
         Problem p = new  Problem(board,
                                 new GasolinaSuccesorFunction(),
@@ -91,6 +93,7 @@ public class Main {
 
     // System.out.println("Coste inicial: " + costeInicial);
     // System.out.println("Coste final: " + costeFinal);
+    long end = System.currentTimeMillis();
 
     GasolinaBoard estadoFinal = (GasolinaBoard)search.getGoalState(); // el estado final encontrado
 
@@ -101,6 +104,8 @@ public class Main {
     System.out.println("Heurística final: " + heuristicaFinal);
     System.out.println("Beneficio inicial: " + beneficioInicial);
     System.out.println("Beneficio final: " + beneficioFinal);
+
+    System.out.println("Tiempo de ejecución: " + (end - start) + " ms");
 
     }
 
