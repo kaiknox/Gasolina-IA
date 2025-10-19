@@ -62,7 +62,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
             }
         }
 
-        // INVERTIR ORDEN: para cada viaje con dos gasolineras, invierte el orden
+        // INVERTIR ORDEN, DIVIDIR y SWAP: para cada viaje con dos gasolineras
         for (int i = 0; i < n; i++) {
             Camion camion = camiones.get(i);
             List<Viajes> viajes = camion.getViajes();
@@ -80,6 +80,22 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     newBoard.invertirOrdenViaje(i, k);
                     Successor s = new Successor("Invertir orden viaje " + k + " de camión " + i, newBoard);
                     retval.add(s);
+
+                    // Dividir viaje en dos
+                    estadoCopy = deepCopyEstado(estado);
+                    newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
+                    newBoard.dividirViajeEnDos(i, k);
+                    retval.add(new Successor("Dividir viaje " + k + " en camión " + i, newBoard));
+
+                    // Swap genérico (permite idx 0<->1, pero queda abierto si hubiese más)
+                    for (int a = 0; a < 2; a++) {
+                        for (int b = a + 1; b < 2; b++) {
+                            estadoCopy = deepCopyEstado(estado);
+                            newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
+                            newBoard.swapPeticionesMismoViaje(i, k, a, b);
+                            retval.add(new Successor("Swap peticiones en viaje " + k + " índices " + a + "<->" + b + " en camión " + i, newBoard));
+                        }
+                    }
                 }
             }
         }
@@ -112,7 +128,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
             }
         }
 
-        System.out.println("[DEBUG] Vecinos generados: " + retval.size());
+        //System.out.println("[DEBUG] Vecinos generados: " + retval.size());
         return retval;
 
     }

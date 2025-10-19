@@ -134,7 +134,7 @@ check-structure:
 # Crear backup del código fuente
 backup:
 	@echo "Creando backup..."
-	@bash -c 'tar -czf backup-$(shell date +%Y%m%d-%H%M%S).tar.gz src/* $(JAR_LIBS) Makefile' 2>/dev/null || echo "tar no disponible: omitiendo backup con tar"
+	@bash -c 'tar -czf backup-$(shell date +%Y%m%d-%H%M%S).tar.gz *.java $(JAR_LIBS) Makefile' 2>/dev/null || echo "tar no disponible: omitiendo backup con tar"
 	@echo "Backup (intento) completado."
 
 # Ayuda

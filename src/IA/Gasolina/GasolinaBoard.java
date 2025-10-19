@@ -214,6 +214,113 @@ public class GasolinaBoard {
         camion.setHorasTrabajadas(sumaT);
     }
 
+    /**
+     * Swap de peticiones dentro del mismo viaje: cambia el orden de dos paradas (no provisionales).
+     * idxA y idxB son índices dentro de las paradas no provisionales (0..n-1). Con nuestro modelo, n suele ser 2.
+     */
+    public void swapPeticionesMismoViaje(int idCamion, int idViaje, int idxA, int idxB) {
+        if (idxA == idxB) return;
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        List<Viajes> viajes = camion.getViajes();
+        if (idViaje < 0 || idViaje >= viajes.size()) return;
+        Viajes viajeGrupo = viajes.get(idViaje);
+        if (viajeGrupo == null) return;
+
+        List<Viaje> tramos = viajeGrupo.getListaViajes();
+        List<Viaje> gasTramos = new ArrayList<>();
+        for (Viaje v : tramos) if (!v.isProvisionalReturn()) gasTramos.add(v);
+        if (gasTramos.size() < 2) return; // nada que swapear
+        if (idxA < 0 || idxB < 0 || idxA >= gasTramos.size() || idxB >= gasTramos.size()) return;
+
+        // Determinar las dos paradas en el nuevo orden
+        Viaje stopA = gasTramos.get(idxA);
+        Viaje stopB = gasTramos.get(idxB);
+
+        int cx = camion.getCoordX();
+        int cy = camion.getCoordY();
+        // Reconstituir el viaje: centro -> stopA -> stopB -> centro
+        Viaje tramo1 = new Viaje(cx, cy, stopA.getCoordX_fin(), stopA.getCoordY_fin(), stopA.getDiasPendientes());
+        Viaje tramo2 = new Viaje(stopA.getCoordX_fin(), stopA.getCoordY_fin(), stopB.getCoordX_fin(), stopB.getCoordY_fin(), stopB.getDiasPendientes());
+        Viaje tramo3 = new Viaje(stopB.getCoordX_fin(), stopB.getCoordY_fin(), cx, cy, stopB.getDiasPendientes(), true);
+
+        // Sustituir en viajeGrupo
+        List<Viaje> nuevo = new ArrayList<>();
+        nuevo.add(tramo1);
+        nuevo.add(tramo2);
+        nuevo.add(tramo3);
+        viajeGrupo.getListaViajes().clear();
+        viajeGrupo.getListaViajes().addAll(nuevo);
+
+        double nuevaDist = tramo1.getDistanciaTotal() + tramo2.getDistanciaTotal() + tramo3.getDistanciaTotal();
+        double nuevoTiempo = tramo1.getTiempoTotal() + tramo2.getTiempoTotal() + tramo3.getTiempoTotal();
+        viajeGrupo.setDistanciaTotal(nuevaDist);
+        viajeGrupo.setTiempoTotal(nuevoTiempo);
+
+        // Actualizar totales del camión
+        double suma = 0.0, sumaT = 0.0;
+        for (Viajes v : viajes) {
+            suma += v.getDistanciaTotal();
+            sumaT += v.getTiempoTotal();
+        }
+        camion.setDistanciaRecorrida(suma);
+        camion.setHorasTrabajadas(sumaT);
+    }
+
+    /**
+     * Divide un viaje con dos gasolineras en dos viajes independientes (uno por gasolinera).
+     * Valida: no exceder Camion.maxViajes, ni límites de distancia/horas.
+     * Estructura esperada del viaje original: [centro->G1], [G1->G2], [G2->centro]
+     */
+    public void dividirViajeEnDos(int idCamion, int idViaje) {
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        List<Viajes> viajes = camion.getViajes();
+        if (idViaje < 0 || idViaje >= viajes.size()) return;
+
+        Viajes original = viajes.get(idViaje);
+        if (original == null) return;
+        List<Viaje> tramos = original.getListaViajes();
+        if (tramos == null || tramos.size() < 3) return; // requiere 2 gasolineras
+
+        // Identificar las dos gasolineras G1 (fin de tramo 0) y G2 (fin de tramo 1)
+        Viaje leg0 = tramos.get(0); // centro -> G1
+        Viaje leg1 = tramos.get(1); // G1 -> G2
+        int cx = camion.getCoordX();
+        int cy = camion.getCoordY();
+        int g1x = leg0.getCoordX_fin();
+        int g1y = leg0.getCoordY_fin();
+        int g2x = leg1.getCoordX_fin();
+        int g2y = leg1.getCoordY_fin();
+        int d1 = leg0.getDiasPendientes();
+        int d2 = leg1.getDiasPendientes();
+
+        // Validación de número de viajes: dividir añade +1 neto
+        if (viajes.size() >= Camion.maxViajes) return;
+
+        // Calcular nuevos totales (sustituir original por dos viajes A y B)
+        double distA = distancia(cx, cy, g1x, g1y) + distancia(g1x, g1y, cx, cy);
+        double distB = distancia(cx, cy, g2x, g2y) + distancia(g2x, g2y, cx, cy);
+        double timeA = distA / Camion.VelocidadMedia;
+        double timeB = distB / Camion.VelocidadMedia;
+        double nuevoTotalDist = camion.getDistanciaRecorrida() - original.getDistanciaTotal() + distA + distB;
+        double nuevoTotalHoras = camion.getHorasTrabajadas() - original.getTiempoTotal() + timeA + timeB;
+        if (nuevoTotalDist > Camion.DistanciaMaxima || nuevoTotalHoras > Camion.HorasJornada) return;
+
+        // Aplicar: quitar original y construir dos viajes nuevos
+        viajes.remove(idViaje);
+        camion.setDistanciaRecorrida(camion.getDistanciaRecorrida() - original.getDistanciaTotal());
+        camion.setHorasTrabajadas(camion.getHorasTrabajadas() - original.getTiempoTotal());
+
+        // Viaje A: centro -> G1 -> centro
+        Viajes vA = new Viajes();
+        vA.añadirViaje(new Viaje(cx, cy, g1x, g1y, d1), camion);
+        camion.addViaje(vA);
+
+        // Viaje B: centro -> G2 -> centro
+        Viajes vB = new Viajes();
+        vB.añadirViaje(new Viaje(cx, cy, g2x, g2y, d2), camion);
+        camion.addViaje(vB);
+    }
+
         /**
          * Mueve una petición (tramo no provisional) de un viaje a otro dentro del mismo camión.
          * idxPeticion es el índice dentro de los tramos no provisionales del viaje origen.
@@ -339,7 +446,7 @@ public class GasolinaBoard {
         double lambda = 0.5; // peso para la distancia
         double heuristica = distanciaTotal - (beneficioTotal / lambda);
         
-        System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
+        //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
         return heuristica;
     }
 

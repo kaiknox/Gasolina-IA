@@ -33,9 +33,9 @@ public class Main {
     public static List<Gasolinera> gasolineras;
     public static List<Distribucion> centros;
 
-    public static int numGasolineras = 10;
+    public static int numGasolineras = 100;
     public static int numCentros = 10;
-    public static int seed = 12345;
+    public static int seed = 1234;
 
     public static void main(String[] args) throws Exception{
 
