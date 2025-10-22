@@ -93,7 +93,7 @@ public class Camion {
 
     public double getBeneficio(){
         double beneficioTotal = 0.0;
-        final double PRECIO_BASE = 100.0; // precio base por depósito (ajusta si tienes otro valor)
+        final double PRECIO_BASE = 1000.0; // precio base por depósito (ajusta si tienes otro valor)
         
         for (Viajes viajesGrupo : viajesCamion) {
             if (viajesGrupo == null) continue;
@@ -106,7 +106,7 @@ public class Camion {
                 if (diasPendientes == 0) {
                     porcentajePrecio = 102.0; // 102%
                 } else {
-                    porcentajePrecio = 100.0 - (2.0 * diasPendientes); // (100 - 2×días)%
+                    porcentajePrecio = 100.0 - (Math.pow(2.0 , diasPendientes)); // (100 - 2×días)%
                     // Protección: si los días son muchos, el porcentaje puede ser negativo
                     if (porcentajePrecio < 0) porcentajePrecio = 0;
                 }

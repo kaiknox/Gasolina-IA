@@ -467,7 +467,7 @@ public class GasolinaBoard {
         // heurística = distancia - beneficio
         // (queremos MINIMIZAR distancia y MAXIMIZAR beneficio)
         double lambda = 0.5; // peso para la distancia
-        double heuristica = distanciaTotal - (beneficioTotal / lambda);
+        double heuristica = distanciaTotal - (beneficioTotal / lambda); // Dist * 2 - beneficio --> + beneficio perdido si lo dejamos para mañana
         
         //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
         return heuristica;
@@ -689,7 +689,7 @@ public class GasolinaBoard {
                         if (dias == 0) {
                             ganancia += 1000 * 1.02;
                         } else {
-                            ganancia += 1000 * ((100.0 - 2.0 * dias) / 100.0);
+                            ganancia += 1000 * ((100.0 - (Math.pow(2,dias))) / 100.0);
                         }
                     }
                 }
