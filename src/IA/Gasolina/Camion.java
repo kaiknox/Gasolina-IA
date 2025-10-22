@@ -11,8 +11,8 @@ public class Camion {
     private List<Viajes> viajesCamion; // Lista de viajes asignados al camion
     private double DistanciaRecorrida; // Distancia total recorrida por el camion
     public static int maxViajes = 5;
-    public static int DistanciaMaxima = 640;
-    public static int HorasJornada = 8;
+    public static double DistanciaMaxima = 640.0;
+    public static double HorasJornada = 8.0;
     private double horasTrabajadas = 0.0;
     public static int VelocidadMedia = 80; // km/h
 
@@ -57,9 +57,9 @@ public class Camion {
     public void addViaje(Viajes viajes){
         // Asumimos que el viaje ya ha sido validado antes de añadirlo
         // Añadir un viaje a la lista de viajes del camion
-    this.viajesCamion.add(viajes);
-    this.DistanciaRecorrida += viajes.getDistanciaTotal();
-    this.horasTrabajadas += viajes.getTiempoTotal();
+        this.viajesCamion.add(viajes);
+        this.DistanciaRecorrida += viajes.getDistanciaTotal();
+        this.horasTrabajadas += viajes.getTiempoTotal();
     }
 
     public double getTiempoDistancia(Viajes viajes) {
@@ -67,7 +67,7 @@ public class Camion {
     }
 
     public boolean puedeAñadirViaje() {
-        return (this.viajesCamion.size() < maxViajes && this.DistanciaRecorrida < DistanciaMaxima && this.horasTrabajadas < HorasJornada);
+        return (this.viajesCamion.size() < maxViajes && this.DistanciaRecorrida < DistanciaMaxima && this.horasTrabajadas < HorasJornada );
     }
 
     public double getDistanciaRecorrida() {
@@ -119,6 +119,22 @@ public class Camion {
         return beneficioTotal;
     }
 
+    public double getPerdida() {
+        double perdidaTotal = 0.0;
+        for(Viajes viajesGrupo : viajesCamion) {
+            if (viajesGrupo == null) continue;
+            for (Viaje viaje : viajesGrupo.getListaViajes()) {
+                int diasPendientes = viaje.getDiasPendientes();
+                if (diasPendientes > 0) {
+                    double porcentajePerdida = 100.0-(Math.pow(2.0, diasPendientes)); // 2×días%
+                    double porcentajePerdida1daymore = 100.0-(Math.pow(2.0, diasPendientes+1)); // 2×días+1%
+                    perdidaTotal += (1000.0 * (porcentajePerdida/100.0)) - (1000.0 * (porcentajePerdida1daymore/100.0)); // usando el mismo precio base
+                }
+            }
+        }
+        return perdidaTotal;
+    }
+
     public void addPeticion(Gasolinera gasolinera, int diasPendientes){
         // Create the new Viaje for this petition
         Viaje viaje = new Viaje(this.coordX, this.coordY, gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
@@ -139,17 +155,10 @@ public class Camion {
 
             Viaje leg;
             try {
-                if (currentSize == 0) {
-                    // primer tramo: camion (centro) -> gasolinera
-                    leg = new Viaje(this.coordX, this.coordY, gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
-                } else if (currentSize == 1) {
-                    // segundo tramo: debe salir de la última gasolinera añadida
-                    Viaje prev = v.getListaViajes().get(0);
-                    leg = new Viaje(prev.getCoordX_fin(), prev.getCoordY_fin(), gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
-                } else if (currentSize == 2) {
+                if (currentSize == 2) {
                     // tercer tramo: salir de última gasolinera y volver al centro
                     Viaje prev = v.getListaViajes().get(1);
-                    leg = new Viaje(prev.getCoordX_fin(), prev.getCoordY_fin(), this.coordX, this.coordY, diasPendientes);
+                    leg = new Viaje(prev.getCoordX_inicio(), prev.getCoordY_inicio(), gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
                 } else {
                     // should not be here (puedeAñadir would be false)
                     continue;
@@ -161,8 +170,9 @@ public class Camion {
 
             double nuevaDist = this.DistanciaRecorrida + leg.getDistanciaTotal();
             double nuevasHoras = this.horasTrabajadas + leg.getTiempoTotal();
-            //System.out.println("[DEBUG] simulated totals: dist=" + nuevaDist + " vs max=" + DistanciaMaxima + ", horas=" + nuevasHoras + " vs max=" + HorasJornada);
-            if (nuevaDist <= DistanciaMaxima && nuevasHoras <= HorasJornada) {
+            //System.out.println("dist actual=" + this.DistanciaRecorrida + " dist=" + nuevaDist + " vs max=" + DistanciaMaxima + ", horas actuales=" + this.horasTrabajadas + " horas=" + nuevasHoras + " vs max=" + HorasJornada);
+            if ((nuevaDist <= DistanciaMaxima) && (nuevasHoras <= HorasJornada)) {
+                //System.out.println("[DEBUG] can add to this Viajes: adding leg of type size=" + currentSize);
                 try {
                     v.añadirViaje(leg, this);
                     // update camion totals
@@ -188,9 +198,11 @@ public class Camion {
         Viajes nuevo = new Viajes();
         // For a new Viajes, the first leg must be centro->gasolinera
         Viaje firstLeg = new Viaje(this.coordX, this.coordY, gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
-        if (this.DistanciaRecorrida + firstLeg.getDistanciaTotal() <= DistanciaMaxima && this.horasTrabajadas + firstLeg.getTiempoTotal() <= HorasJornada) {
+        //Viaje vuelta = new Viaje(gasolinera.getCoordX(), gasolinera.getCoordY(), this.coordX, this.coordY, 0);
+        if ((this.DistanciaRecorrida + firstLeg.getDistanciaTotal()*2) <= DistanciaMaxima && (this.horasTrabajadas + firstLeg.getTiempoTotal()*2) <= HorasJornada) {
             //System.out.println("[DEBUG] creating new Viajes and adding first leg");
             nuevo.añadirViaje(firstLeg, this);
+            //nuevo.añadirViaje(vuelta, this);
             addViaje(nuevo); // this updates DistanciaRecorrida and HorasTrabajadas
             //System.out.println("[DEBUG] added new Viajes. camion viajes count=" + this.viajesCamion.size() + ", distanciaRec=" + this.DistanciaRecorrida + ", horasTrab=" + this.horasTrabajadas);
             return;

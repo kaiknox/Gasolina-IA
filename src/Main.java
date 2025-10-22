@@ -34,7 +34,7 @@ public class Main {
     public static List<Distribucion> centros;
 
     public static int numGasolineras = 100;
-    public static int numCentros = 10;
+    public static int numCentros = 2;
     public static int seed = 1234;
 
     public static void main(String[] args) throws Exception{
@@ -54,12 +54,13 @@ public class Main {
         GasolinaBoard board = new GasolinaBoard(estado_inicial, Main.gasolineras, Main.centros);
         
         // CAMBIO: usar 2 (round-robin) para tener un estado inicial peor y que HC pueda mejorar
-        board.crearEstadoInicial(2); // 1 = asignar al más cercano, 2 = round-robin
+        board.crearEstadoInicial(1); // 1 = asignar al más cercano, 2 = round-robin
 
         //double costeInicial = -board.heuristic();
         //board.escribirEstadoActual();
 
         GasolinaBoard estadoInicial = board; // tu estado inicial
+        estadoInicial.escribirEstadoActual();
         GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
 
         double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
@@ -99,7 +100,7 @@ public class Main {
 
     double heuristicaFinal = heuristica.getHeuristicValue(estadoFinal);
     double beneficioFinal = estadoFinal.calcularBeneficio();
-
+    estadoFinal.escribirEstadoActual();
     System.out.println("Heurística inicial: " + heuristicaInicial);
     System.out.println("Heurística final: " + heuristicaFinal);
     System.out.println("Beneficio inicial: " + beneficioInicial);

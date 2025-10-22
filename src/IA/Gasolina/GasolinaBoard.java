@@ -28,8 +28,6 @@ public class GasolinaBoard {
     }
 
     /* OPERADORES */
-
-
     // Reasigna un viaje de un camion a otro
     /**
      * Reasigna UNA petición (primera encontrada en el viaje especificado) del camión origen al destino.
@@ -131,13 +129,13 @@ public class GasolinaBoard {
         // Eliminar las peticiones a intercambiar
         PeticionInfo petA = null, petB = null;
         for (PeticionInfo p : peticionesA) {
-            if (p.gasolinera == gasA && p.indicePeticion == indiceA) {
+            if (p.gasolinera == gasA) {
                 petA = p;
                 break;
             }
         }
         for (PeticionInfo p : peticionesB) {
-            if (p.gasolinera == gasB && p.indicePeticion == indiceB) {
+            if (p.gasolinera == gasB) {
                 petB = p;
                 break;
             }
@@ -379,58 +377,6 @@ public class GasolinaBoard {
             camion.setDistanciaRecorrida(suma);
             camion.setHorasTrabajadas(sumaT);
         }
-
-
-    
-    public void fusionarViajes(int idCamion, int idViajeA, int idViajeB) {
-        if (idViajeA == idViajeB)
-            return;
-
-        Camion camion = estado_actual.getCamiones().get(idCamion);
-        if (camion == null)
-            return;
-
-        List<Viajes> viajes = camion.getViajes();
-        if (idViajeA >= viajes.size() || idViajeB >= viajes.size())
-            return;
-
-        Viajes viajeA = viajes.get(idViajeA);
-        Viajes viajeB = viajes.get(idViajeB);
-
-        List<Viaje> listaA = viajeA.getListaViajes();
-        List<Viaje> listaB = viajeB.getListaViajes();
-
-        // Validar que no se excede la capacidad
-        int totalViaje = (listaA.size() - 2) + (listaB.size() - 2);
-        if (totalViaje > 2)
-            return; // máximo 2 depósitos (entre start y return)
-
-        // Insertar middle of B into A just before the return trip of A
-        int insertPos = listaA.size() - 1;
-
-        // Excluir primer elemento de B (start) y último (return)
-        for (int i = 1; i < listaB.size() - 1; i++) {
-            listaA.add(insertPos, listaB.get(i));
-            insertPos++;
-        }
-
-        // Actualizar distancia y tiempo totales
-        viajeA.setDistanciaTotal(viajeA.getDistanciaTotal() + viajeB.getDistanciaTotal());
-        viajeA.setTiempoTotal(viajeA.getTiempoTotal() + viajeB.getTiempoTotal());
-
-        // Eliminar viaje B del camión
-        viajes.remove(idViajeB);
-
-        // Recalcular totales del camión
-        double sumaDist = 0.0;
-        double sumaTiempo = 0.0;
-        for (Viajes v : viajes) {
-            sumaDist += v.getDistanciaTotal();
-            sumaTiempo += v.getTiempoTotal();
-        }
-        camion.setDistanciaRecorrida(sumaDist);
-        camion.setHorasTrabajadas(sumaTiempo);
-    }
     // FUNCIONES AUXILIARES
     
     /**
@@ -442,7 +388,7 @@ public class GasolinaBoard {
         camion.setHorasTrabajadas(0.0);
         
         for (PeticionInfo p : peticiones) {
-            camion.addPeticion(p.gasolinera, p.indicePeticion);
+            camion.addPeticion(p.gasolinera, p.diasPendientes);
         }
     }
 
@@ -458,16 +404,18 @@ public class GasolinaBoard {
         List<Camion> camiones = estado_actual.getCamiones();
         double beneficioTotal = 0.0;
         double distanciaTotal = 0.0;
+        double perdidaTotal = 0.0;
         for (int i=0; i<camiones.size(); i++){
             beneficioTotal += camiones.get(i).getBeneficio();
             distanciaTotal += camiones.get(i).getDistanciaRecorrida();
+            perdidaTotal += camiones.get(i).getPerdida();
         }
         
         // Hill Climbing MINIMIZA la heurística, así que:
         // heurística = distancia - beneficio
         // (queremos MINIMIZAR distancia y MAXIMIZAR beneficio)
         double lambda = 0.5; // peso para la distancia
-        double heuristica = distanciaTotal - (beneficioTotal / lambda); // Dist * 2 - beneficio --> + beneficio perdido si lo dejamos para mañana
+        double heuristica = (perdidaTotal/(lambda*2)) + distanciaTotal - (beneficioTotal / lambda); // Dist - beneficio * 2--> + beneficio perdido si lo dejamos para mañana
         
         //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
         return heuristica;
@@ -480,10 +428,6 @@ public class GasolinaBoard {
      /* auxiliary functions */
 
      // Some functions will be needed for creating a copy of the state
-
-
-
-
 
 
     public void crearEstadoInicial(int funcionAescoger) {
@@ -511,12 +455,16 @@ public class GasolinaBoard {
             if (peticiones == null) continue;
 
             for (int d = 0; d < peticiones.size(); d++) {
+                int diasPendientes = peticiones.get(d);
+                System.out.println("Asignando petición de días: " + diasPendientes + ", de gasolinera " + gIndex);
                 // find nearest camion
                 int bestCamion = -1;
                 double bestDist = Double.MAX_VALUE;
                 for (int c = 0; c < estado_actual.getCamiones().size(); c++) {
+                    System.out.print("Evaluando camión " + c + " para gasolinera " + gIndex);
                     Camion camion = estado_actual.getCamiones().get(c);
                     double dist = distancia(camion.getCoordX(), camion.getCoordY(), g.getCoordX(), g.getCoordY());
+                    System.out.println(", distancia = " + dist);
                     if (dist < bestDist) {
                         bestDist = dist;
                         bestCamion = c;
@@ -524,7 +472,8 @@ public class GasolinaBoard {
                 }
 
                 if (bestCamion >= 0) {
-                    estado_actual.getCamiones().get(bestCamion).addPeticion(g, d);
+                    System.out.println("-> Asignando petición a camión " + bestCamion + " con días pendientes " + diasPendientes);
+                    estado_actual.getCamiones().get(bestCamion).addPeticion(g, diasPendientes);
                 }
             }
         }
@@ -567,7 +516,7 @@ public class GasolinaBoard {
         // Eliminar la petición especificada
         PeticionInfo aEliminar = null;
         for (PeticionInfo p : peticionesActuales) {
-            if (p.gasolinera == gasolineraAEliminar && p.indicePeticion == indicePeticionAEliminar) {
+            if (p.gasolinera == gasolineraAEliminar) {
                 aEliminar = p;
                 break;
             }
@@ -583,7 +532,7 @@ public class GasolinaBoard {
         
         // Re-agregar todas las peticiones restantes
         for (PeticionInfo p : peticionesActuales) {
-            camion.addPeticion(p.gasolinera, p.indicePeticion);
+            camion.addPeticion(p.gasolinera, p.diasPendientes);
         }
     }
     
@@ -612,7 +561,7 @@ public class GasolinaBoard {
                     if (gas.getCoordX() == tramo.getCoordX_fin() && gas.getCoordY() == tramo.getCoordY_fin()) {
                         // Simplificación: asumimos índice 0 de petición
                         // En una implementación completa, necesitarías almacenar el índice en Viaje
-                        result.add(new PeticionInfo(gas, 0, tramo.getDiasPendientes()));
+                        result.add(new PeticionInfo(gas, tramo.getDiasPendientes()));
                         break;
                     }
                 }
@@ -627,12 +576,10 @@ public class GasolinaBoard {
      */
     private static class PeticionInfo {
         Gasolinera gasolinera;
-        int indicePeticion;
         int diasPendientes;
         
-        PeticionInfo(Gasolinera g, int idx, int dias) {
+        PeticionInfo(Gasolinera g, int dias) {
             this.gasolinera = g;
-            this.indicePeticion = idx;
             this.diasPendientes = dias;
         }
     }
@@ -648,7 +595,13 @@ public class GasolinaBoard {
     //CONSULTORAS
 
     public void escribirEstadoActual() {
-        System.out.println("Estado actual del GasolinaBoard:");
+        /*System.out.println("Estado actual del GasolinaBoard:");
+        for (Gasolinera gasolinera : gasolineras) {
+            System.out.println("Gasolinera en (" + gasolinera.getCoordX() + "," + gasolinera.getCoordY() + ")");
+            for(int Peticiones : gasolinera.getPeticiones()) {
+                System.out.println("  Petición pendiente con días: " + Peticiones);
+            }
+        }*/
         List<Camion> camiones = estado_actual.getCamiones();
         for (int i = 0; i < camiones.size(); i++) {
             Camion camion = camiones.get(i);

@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Viajes {
-    private static final int MAX_VIAJES = 3; // máximo número de Viaje dentro de un objeto Viajes (3 tramos: salida, intermedio, retorno)
+    private static final int MAX_VIAJES = 3; // máximo número de Viaje dentro de un objeto Viajes (3 tramos: salida,
+                                             // intermedio, retorno)
     private List<Viaje> listaViajes = new ArrayList<>(MAX_VIAJES);
     private double distanciaTotal;
     private double tiempoTotal;
@@ -24,6 +25,7 @@ public class Viajes {
             this.tiempoTotal += viaje.getTiempoTotal();
         }
     }
+
     // Métodos para añadir viajes, calcular distancia total, etc.
     /**
      * Añade un viaje respetando la secuencia de 3 tramos:
@@ -42,52 +44,44 @@ public class Viajes {
             if (viaje.getCoordX_inicio() != camion.getCoordX() || viaje.getCoordY_inicio() != camion.getCoordY()) {
                 throw new IllegalArgumentException("Primer tramo debe comenzar en el centro del camión");
             }
-        } else if (size == 1) {
+        } else if (size == 2) {
             // Segundo tramo: debe empezar donde terminó el anterior (gasolinera)
             Viaje anterior = listaViajes.get(size - 1);
-            if (viaje.getCoordX_inicio() != anterior.getCoordX_fin() || viaje.getCoordY_inicio() != anterior.getCoordY_fin()) {
+            if (viaje.getCoordX_inicio() != anterior.getCoordX_inicio() || viaje.getCoordY_inicio() != anterior.getCoordY_inicio()) {
                 throw new IllegalArgumentException("Segundo tramo debe empezar en la gasolinera del tramo anterior");
             }
-        } else if (size == 2) {
-            // Tercer tramo: debe empezar donde terminó el anterior y terminar en el centro
-            Viaje anterior = listaViajes.get(size - 1);
-            if (viaje.getCoordX_inicio() != anterior.getCoordX_fin() || viaje.getCoordY_inicio() != anterior.getCoordY_fin()) {
-                throw new IllegalArgumentException("Tercer tramo debe empezar en la gasolinera del tramo anterior");
-            }
-            if (viaje.getCoordX_fin() != camion.getCoordX() || viaje.getCoordY_fin() != camion.getCoordY()) {
-                throw new IllegalArgumentException("Tercer tramo debe terminar en el centro del camión");
-            }
         }
-
         // If adding the first real leg (size==0 before adding), also append a provisional return from that gasolinera to the camion's center.
         int before = listaViajes.size();
-        listaViajes.add(viaje);
         distanciaTotal += viaje.getDistanciaTotal();
         tiempoTotal += viaje.getTiempoTotal();
-
+        //System.out.println("[DEBUG] añadiendo viaje al camion." + camion.getCoordX() + "," + camion.getCoordY() + ", before=" + before + ", viaje=(" + viaje.getCoordX_inicio() + "," + viaje.getCoordY_inicio() + ")->(" + viaje.getCoordX_fin() + "," + viaje.getCoordY_fin() + "), distanciaTotal=" + distanciaTotal + ", tiempoTotal=" + tiempoTotal);
         if (before == 0) {
+            listaViajes.add(viaje);
             // add provisional return: from this.gasolinera (viaje end) back to camion center
-            Viaje provisional = new Viaje(viaje.getCoordX_fin(), viaje.getCoordY_fin(), camion.getCoordX(), camion.getCoordY(), viaje.getDiasPendientes(), true);
+            Viaje provisional = new Viaje(viaje.getCoordX_fin(), viaje.getCoordY_fin(), camion.getCoordX(), camion.getCoordY(), 0, true);
             listaViajes.add(provisional);
             distanciaTotal += provisional.getDistanciaTotal();
             tiempoTotal += provisional.getTiempoTotal();
-        } else if (before == 1) {
+        } else if (before == 2) {
             // We previously had added a provisional return as the second entry. Now we're adding the real intermediate leg.
             // Replace the provisional (which should be at index 1) with the new real leg, and append a final return to center based on the new last gasolinera.
-            if (listaViajes.size() >= 2) {
                 Viaje maybeProvisional = listaViajes.get(1);
                 if (maybeProvisional.isProvisionalReturn()) {
                     // remove provisional totals
                     distanciaTotal -= maybeProvisional.getDistanciaTotal();
                     tiempoTotal -= maybeProvisional.getTiempoTotal();
+                    //System.out.println("[DEBUG] replacing provisional return with real intermediate leg Provisional=(" + maybeProvisional.getCoordX_inicio() + "," + maybeProvisional.getCoordY_inicio() + ")->(" + maybeProvisional.getCoordX_fin() + "," + maybeProvisional.getCoordY_fin() + ")");
                     listaViajes.set(1, viaje); // replace provisional with real intermediate
                     // add final return from this new viaje end back to center
-                    Viaje finalReturn = new Viaje(viaje.getCoordX_fin(), viaje.getCoordY_fin(), camion.getCoordX(), camion.getCoordY(), viaje.getDiasPendientes(), false);
+                    Viaje finalReturn = new Viaje(viaje.getCoordX_fin(), viaje.getCoordY_fin(), camion.getCoordX(), camion.getCoordY(), 0, true);
                     listaViajes.add(finalReturn);
                     distanciaTotal += finalReturn.getDistanciaTotal();
                     tiempoTotal += finalReturn.getTiempoTotal();
                 }
-            }
+            
+        } else {
+            throw new IllegalStateException("No se pueden añadir más de " + MAX_VIAJES + " viajes a este objeto Viajes");
         }
     }
 
@@ -95,17 +89,20 @@ public class Viajes {
     public boolean puedeAñadir() {
         return listaViajes.size() < MAX_VIAJES;
     }
+
     public double getDistanciaTotal() {
         return distanciaTotal;
     }
+
     public double getTiempoTotal() {
         return tiempoTotal;
     }
+
     public List<Viaje> getListaViajes() {
         return listaViajes;
     }
 
-    public double getCantidad(){
+    public double getCantidad() {
         double cantidadTotal = 0;
         for (int i = 0; i < listaViajes.size(); i++) {
             cantidadTotal += listaViajes.get(i).getCantidad();
@@ -113,11 +110,12 @@ public class Viajes {
         return cantidadTotal;
     }
 
-        // Setters necesarios para el operador de invertir orden
-        public void setDistanciaTotal(double d) {
-            this.distanciaTotal = d;
-        }
-        public void setTiempoTotal(double t) {
-            this.tiempoTotal = t;
-        }
+    // Setters necesarios para el operador de invertir orden
+    public void setDistanciaTotal(double d) {
+        this.distanciaTotal = d;
+    }
+
+    public void setTiempoTotal(double t) {
+        this.tiempoTotal = t;
+    }
 }
