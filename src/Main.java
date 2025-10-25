@@ -26,6 +26,7 @@ import IA.Gasolina.Camion;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 
 public class Main {
@@ -34,10 +35,44 @@ public class Main {
     public static List<Distribucion> centros;
 
     public static int numGasolineras = 100;
-    public static int numCentros = 2;
+    public static int numCentros = 10;
     public static int seed = 1234;
 
+    // Parámetros de búsqueda
+    public static String algoritmo = "SA"; // "HC" = Hill Climbing, "SA" = Simulated Annealing
+    
+    // Parámetros para Simulated Annealing
+    public static int stepsSA = 1000;     // Número de iteraciones
+    public static int stirsSA = 100;      // Cambios de temperatura
+    public static int kSA = 20;            // Parámetro k para la función de temperatura
+    public static double lambdaSA = 0.001; // Parámetro lambda para la función de temperatura
+
     public static void main(String[] args) throws Exception{
+        
+        // Permitir elegir algoritmo por argumento de línea de comandos
+        if (args.length > 0) {
+            algoritmo = args[0].toUpperCase();
+        } else {
+            // Si no hay argumentos, preguntar al usuario
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("===========================================");
+            System.out.println("Seleccione el algoritmo de búsqueda:");
+            System.out.println("1. Hill Climbing (HC)");
+            System.out.println("2. Simulated Annealing (SA)");
+            System.out.println("===========================================");
+            System.out.print("Ingrese su opción (1 o 2): ");
+            
+            int opcion = scanner.nextInt();
+            if (opcion == 1) {
+                algoritmo = "HC";
+            } else if (opcion == 2) {
+                algoritmo = "SA";
+            } else {
+                System.out.println("Opción inválida. Usando Hill Climbing por defecto.");
+                algoritmo = "HC";
+            }
+        }
+        System.out.println();
 
         // Inicializar problema:
         
@@ -60,7 +95,7 @@ public class Main {
         //board.escribirEstadoActual();
 
         GasolinaBoard estadoInicial = board; // tu estado inicial
-        estadoInicial.escribirEstadoActual();
+        //estadoInicial.escribirEstadoActual();
         GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
 
         double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
@@ -74,9 +109,16 @@ public class Main {
                                 new GasolinaGoalTest(),
                                 new GasolinaHeuristicFunction());
 
-        // Instantiate the search algorithm
-	// AStarSearch(new GraphSearch()) or IterativeDeepeningAStarSearch()
-        Search search = new HillClimbingSearch();
+        // Instantiate the search algorithm based on user selection
+        Search search;
+        if (algoritmo.equals("SA")) {
+            System.out.println("=== Usando Simulated Annealing ===");
+            System.out.println("Parámetros: steps=" + stepsSA + ", stirs=" + stirsSA + ", k=" + kSA + ", lambda=" + lambdaSA);
+            search = new SimulatedAnnealingSearch(stepsSA, stirsSA, kSA, lambdaSA);
+        } else {
+            System.out.println("=== Usando Hill Climbing ===");
+            search = new HillClimbingSearch();
+        }
 
         // Instantiate the SearchAgent object
         SearchAgent agent = new SearchAgent(p, search);
@@ -100,7 +142,7 @@ public class Main {
 
     double heuristicaFinal = heuristica.getHeuristicValue(estadoFinal);
     double beneficioFinal = estadoFinal.calcularBeneficio();
-    estadoFinal.escribirEstadoActual();
+    //estadoFinal.escribirEstadoActual();
     System.out.println("Heurística inicial: " + heuristicaInicial);
     System.out.println("Heurística final: " + heuristicaFinal);
     System.out.println("Beneficio inicial: " + beneficioInicial);
@@ -122,8 +164,13 @@ public class Main {
     
     private static void printActions(List actions) {
         for (int i = 0; i < actions.size(); i++) {
-            String action = (String) actions.get(i);
-            System.out.println(action);
+            Object action = actions.get(i);
+            // Simulated Annealing puede devolver estados en lugar de strings
+            if (action instanceof String) {
+                System.out.println(action);
+            } else {
+                System.out.println("Action " + i + ": " + action.getClass().getSimpleName());
+            }
         }
     }
 }

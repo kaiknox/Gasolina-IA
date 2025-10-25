@@ -401,6 +401,7 @@ public class GasolinaBoard {
     /* Heuristic function */
 
     public double heuristic(){
+        /*
         List<Camion> camiones = estado_actual.getCamiones();
         double beneficioTotal = 0.0;
         double distanciaTotal = 0.0;
@@ -419,6 +420,8 @@ public class GasolinaBoard {
         
         //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ")");
         return heuristica;
+        */
+        return -calcularBeneficio();
     }
 
     /* Goal test */

@@ -41,6 +41,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
         }
 
         // INTERCAMBIAR: swap viajes between two trucks (single-step successors)
+         
         for (int a = 0; a < n; a++) {
             Camion ca = camiones.get(a);
             List<Viajes> va = ca.getViajes();
@@ -61,6 +62,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                 }
             }
         }
+        
 
         // INVERTIR ORDEN, DIVIDIR y SWAP: para cada viaje con dos gasolineras
         for (int i = 0; i < n; i++) {
