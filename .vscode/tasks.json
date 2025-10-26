@@ -1,0 +1,40 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make:compile-win",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "executable": "pwsh.exe",
+                    "args": ["-NoProfile", "-Command"]
+                }
+            },
+            "command": "make compile-win",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "make:run-win",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "executable": "pwsh.exe",
+                    "args": ["-NoProfile", "-Command"]
+                }
+            },
+            "command": "make run-win",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}

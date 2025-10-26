@@ -77,9 +77,13 @@ public class Viaje {
         return provisionalReturn;
     }
 
+    public void setProvisionalReturn(boolean provisionalReturn) {
+        this.provisionalReturn = provisionalReturn;
+    }
+
     public int getCoordX_inicio() {
         return coordX_inicio;
-    }   
+    }
     public int getCoordY_inicio() {
         return coordY_inicio;
     }

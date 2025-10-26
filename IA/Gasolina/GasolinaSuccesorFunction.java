@@ -148,10 +148,10 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
             }
         }
 
-        System.out.println("[DEBUG] Vecinos generados: " + retval.size());
+        /*System.out.println("[DEBUG] Vecinos generados: " + retval.size());
         for (Successor s : retval) {
             System.out.println("  - " + s.getAction());
-        }
+        }*/
         return retval;
 
     }

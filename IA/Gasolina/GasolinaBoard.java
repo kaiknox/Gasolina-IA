@@ -47,13 +47,13 @@ public class GasolinaBoard {
         Viajes viajeGrupo = viajesOrigen.get(idViaje);
         if (viajeGrupo == null || viajeGrupo.getListaViajes().isEmpty()) return;
         
-    System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
-    viajesOrigen.remove(idViaje);
-    estado_actual.getCamiones().get(idCamionOrigen).setViajes(viajesOrigen);
-    estado_actual.getCamiones().get(idCamionDestino).addViaje(viajeGrupo);
-    camionOrigen.fixViajes();
-    camionDestino.fixViajes();
-    System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        viajesOrigen.remove(idViaje);
+        estado_actual.getCamiones().get(idCamionOrigen).setViajes(viajesOrigen);
+        estado_actual.getCamiones().get(idCamionDestino).addViaje(viajeGrupo);
+        camionOrigen.fixViajes();
+        camionDestino.fixViajes();
+        System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
         // Encontrar la primera gasolinera en este Viajes (ignorar tramos de retorno)
         /*Gasolinera gasolineraAMover = null;
         int diasPendientesAMover = -1;

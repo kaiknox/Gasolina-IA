@@ -44,17 +44,19 @@ public class Main {
     // Parámetros para Simulated Annealing
     public static int stepsSA = 1000;     // Número de iteraciones
     public static int stirsSA = 100;      // Cambios de temperatura
-    public static int kSA = 20;            // Parámetro k para la función de temperatura
-    public static double lambdaSA = 0.001; // Parámetro lambda para la función de temperatura
+    public static int kSA = 20;            // Parámetro k para la función SA
+    public static double lambdaSA = 0.001; // Parámetro lambda para la función SA
 
     public static void main(String[] args) throws Exception{
         
+        // Scanner para interacción en caso de no pasar argumentos suficientes
+        Scanner scanner = new Scanner(System.in);
+
         // Permitir elegir algoritmo por argumento de línea de comandos
         if (args.length > 0) {
             algoritmo = args[0].toUpperCase();
         } else {
             // Si no hay argumentos, preguntar al usuario
-            Scanner scanner = new Scanner(System.in);
             System.out.println("===========================================");
             System.out.println("Seleccione el algoritmo de búsqueda:");
             System.out.println("1. Hill Climbing (HC)");
@@ -88,18 +90,55 @@ public class Main {
 
         GasolinaBoard board = new GasolinaBoard(estado_inicial, Main.gasolineras, Main.centros);
         
-        // CAMBIO: usar 2 (round-robin) para tener un estado inicial peor y que HC pueda mejorar
-        board.crearEstadoInicial(1); // 1 = asignar al más cercano, 2 = round-robin
+        // Permitir seleccionar método de creación de estado inicial
+        // 1 = asignar al más cercano, 2 = round-robin
+        int inicialMetodo = 1;
+        if (args.length > 1) {
+            try {
+                inicialMetodo = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                String a2 = args[1].toLowerCase();
+                if (a2.startsWith("r") || a2.contains("round")) {
+                    inicialMetodo = 2;
+                } else {
+                    inicialMetodo = 1;
+                }
+            }
+        } else {
+            // Si no se pasó por argumento, preguntar al usuario
+            System.out.println();
+            System.out.println("Seleccione método para crear estado inicial:");
+            System.out.println("1. Asignar al más cercano (por defecto)");
+            System.out.println("2. Round-robin");
+            System.out.print("Ingrese su opción (1 o 2): ");
+            try {
+                int opInit = scanner.nextInt();
+                if (opInit == 1 || opInit == 2) {
+                    inicialMetodo = opInit;
+                } else {
+                    System.out.println("Opción inválida. Usando 1 (más cercano) por defecto.");
+                    inicialMetodo = 1;
+                }
+            } catch (Exception e) {
+                System.out.println("Entrada no válida. Usando 1 (más cercano) por defecto.");
+                inicialMetodo = 1;
+                scanner.nextLine();
+            }
+        }
+
+        board.crearEstadoInicial(inicialMetodo);
 
         //double costeInicial = -board.heuristic();
         //board.escribirEstadoActual();
 
-        GasolinaBoard estadoInicial = board; // tu estado inicial
-        //estadoInicial.escribirEstadoActual();
-        GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
+    GasolinaBoard estadoInicial = board; // tu estado inicial
+    // Mostrar diagnósticos de integridad/ganancia antes de la búsqueda
+    System.out.println("Ganancia (sin coste) inicial: " + estadoInicial.calcularGananciaSinCoste());
+    estadoInicial.verificarIntegridadPeticiones();
+    GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
 
-        double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
-        double beneficioInicial = estadoInicial.calcularBeneficio();
+    double heuristicaInicial = heuristica.getHeuristicValue(estadoInicial);
+    double beneficioInicial = estadoInicial.calcularBeneficio();
 
         long start = System.currentTimeMillis();
 
@@ -142,6 +181,8 @@ public class Main {
 
     double heuristicaFinal = heuristica.getHeuristicValue(estadoFinal);
     double beneficioFinal = estadoFinal.calcularBeneficio();
+    System.out.println("Ganancia (sin coste) final: " + estadoFinal.calcularGananciaSinCoste());
+    estadoFinal.verificarIntegridadPeticiones();
     //estadoFinal.escribirEstadoActual();
     System.out.println("Heurística inicial: " + heuristicaInicial);
     System.out.println("Heurística final: " + heuristicaFinal);
@@ -149,6 +190,26 @@ public class Main {
     System.out.println("Beneficio final: " + beneficioFinal);
 
     System.out.println("Tiempo de ejecución: " + (end - start) + " ms");
+
+    board.imprimirEstadoPeticiones();
+
+    // Diagnostic: per-camion breakdown of tramos (provisional vs non-provisional)
+    System.out.println("\n--- Diagnostic: detalle por camión (tramos) ---");
+    int camionIdx = 0;
+    for (Camion c : estadoFinal.getEstado_actual().getCamiones()) {
+        int total = 0, nonProv = 0;
+        System.out.println("Camión " + camionIdx + ": coord=(" + c.getCoordX() + "," + c.getCoordY() + ")");
+        for (Viajes vg : c.getViajes()) {
+            for (Viaje t : vg.getListaViajes()) {
+                total++;
+                String prov = t.isProvisionalReturn() ? "PROV" : "REAL";
+                if (!t.isProvisionalReturn()) nonProv++;
+                System.out.println("  Tramo: " + prov + " dias=" + t.getDiasPendientes() + " from=(" + t.getCoordX_inicio() + "," + t.getCoordY_inicio() + ") to=(" + t.getCoordX_fin() + "," + t.getCoordY_fin() + ")");
+            }
+        }
+        System.out.println("  Totales: tramos=" + total + ", no-provisionales=" + nonProv + "\n");
+        camionIdx++;
+    }
 
     }
 

@@ -100,13 +100,15 @@ public class Camion {
             
             // Cada viaje dentro del grupo de viajes tiene sus días pendientes
             for (Viaje viaje : viajesGrupo.getListaViajes()) {
+
+                if(viaje.isProvisionalReturn()) continue; // ignorar tramos de retorno provisional
                 int diasPendientes = viaje.getDiasPendientes(); // asume que Viaje tiene este getter
                 
                 double porcentajePrecio;
                 if (diasPendientes == 0) {
                     porcentajePrecio = 102.0; // 102%
                 } else {
-                    porcentajePrecio = 100.0 - (Math.pow(2.0 , diasPendientes)); // (100 - 2×días)%
+                    porcentajePrecio = 100.0 - (Math.pow(2.0 , diasPendientes)); // (100 - 2^días)%
                     // Protección: si los días son muchos, el porcentaje puede ser negativo
                     if (porcentajePrecio < 0) porcentajePrecio = 0;
                 }
@@ -210,6 +212,12 @@ public class Camion {
             // cannot add due to totals; prune
             System.out.println("[DEBUG] cannot create new Viajes: totals would exceed limits");
             return;
+        }
+    }
+
+    public void fixViajes(){
+        for(Viajes v : viajesCamion){
+            v.fixProvisionalReturn();
         }
     }
 

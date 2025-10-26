@@ -118,4 +118,18 @@ public class Viajes {
     public void setTiempoTotal(double t) {
         this.tiempoTotal = t;
     }
+
+    public void fixProvisionalReturn(){
+        for (int i=0; i<listaViajes.size(); i++){
+            Viaje v = listaViajes.get(i);
+            if(3==listaViajes.size()) {
+                if(i==2) v.setProvisionalReturn(true);
+                else v.setProvisionalReturn(false);
+            }
+            else if(2==listaViajes.size()) {
+                if(i==1) v.setProvisionalReturn(true);
+                else v.setProvisionalReturn(false);
+            }
+        }
+    }
 }

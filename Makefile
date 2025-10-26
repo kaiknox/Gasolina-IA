@@ -31,7 +31,8 @@ empty :=
 space := $(empty) $(empty)
 CLASSPATH = $(BIN_DIR):$(SRC_DIR):$(subst $(space),:, $(JAR_LIBS))
 
-CLASSPATH_WIN = .$(SEP_WIN)$(subst $(space),$(SEP_WIN),$(JAR_LIBS))
+# Include bin and src in the Windows classpath so java can find compiled classes
+CLASSPATH_WIN = $(BIN_DIR)$(SEP_WIN)$(SRC_DIR)$(SEP_WIN)$(subst $(space),$(SEP_WIN),$(JAR_LIBS))
 
 # Compilador y flags
 JAVAC = javac
@@ -55,7 +56,9 @@ compile:
 # con el classpath de Windows para evitar que Make ejecute la regla Unix.
 compile-win:
 	@echo "Compilando archivos Java (Windows)..."
-	$(JAVAC) -cp $(CLASSPATH_WIN) $(JAVA_FILES)
+	@rem Crear directorio bin si no existe (cmd-compatible)
+	@if not exist "$(BIN_DIR)" mkdir "$(BIN_DIR)"
+	$(JAVAC) -cp $(CLASSPATH_WIN) -d $(BIN_DIR) $(JAVA_FILES)
 	@echo "Compilación completada."
 
 # Ejecutar el programa principal
