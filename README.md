@@ -97,18 +97,3 @@ make run > salida.txt 2>&1
 ```bash
 make jar-info
 ```
-
-Sugerencias prácticas relacionadas con el proyecto
-- Si planeas ejecutar experimentos con Hill Climbing (HC) o Simulated Annealing (SA), crea un pequeño script que llame a `make run` varias veces con semillas distintas y guarde resultados en CSV.
-- Evita ejecutar con prints de debug activos en la heurística (ralentizan mucho). Usa flags de depuración para activar impresiones solo cuando las necesites.
-
-Si quieres, genero ahora un pequeño harness de experimentos (script `run_experiments.sh` o un `MainExperiment.java`) que:
-- calcule estadísticas iniciales (median/mean de ganancias y distancias),
-- recorra un grid de valores para el peso de distancia, y
-- genere un CSV con resultados por ejecución.
-
----
-
-README generado automáticamente según `Makefile`.
-
-Si quieres que lo adapte (más detalles sobre opciones de `Main`, parámetros de búsqueda o ejemplo de `make` para JDK alternativo), dímelo y hago los cambios.
