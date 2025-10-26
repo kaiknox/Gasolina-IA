@@ -1,0 +1,55 @@
+Experimento 1 y 2: Teniendo un contexto de problema en el cual empezamos con 10 centros de distribución, con un camión en cada uno,
+y 100 gasolineras y usando el algoritmo de hill climbing hemos hecho un estudio de resultados en función de la heurística para 10 semillas 
+diferentes (de la 1 a la 10, ambas incluidas) y estos han sido los resultados para las dos estrategias de creación de estados iniciales:
+
+estrategia 1, Greedy Best First:
+
+    Semilla     Heurística(negada)      Inicial     Final
+    1                                   23391       24695
+    2                                   24461       25787
+    3                                   23334       23562
+    4                                   23440       24100
+    5                                   24127       25399
+    6                                   22992       24256
+    7                                   24121       25049
+    8                                   21606       22502
+    9                                   19998       21246
+    10                                  24012       24892
+
+    Total:                              231482      241488
+
+
+estrategia 2, Round-Robin:
+
+    Semilla     Heurística(negada)      Inicial     Final
+    1                                   24007       24095
+    2                                   25882       26828
+    3                                   25597       25637
+    4                                   24707       25015
+    5                                   23472       23732
+    6                                   23603       23659
+    7                                   24876       25160
+    8                                   24998       25078
+    9                                   23639       23923
+    10                                  21964       22664
+
+    Total:                              242745      245791
+
+
+El estudio no es demasiado grande al ser solamente de 10 semillas diferentes pero basandonos en lo que vemos en el hemos decidido usar la segunda
+estrategia, en la primera hay una diferencia más notable entre la solución inicial y final pero incluso después de usar el algoritmo la misma 
+estrategia inicial de la segunda saca mejores resultados de media, y por lo general aunque haya menos diferencia se encuentran mejores resultados 
+usando la segunda estrategia (Round-Robin), así que nos quedaremos con ella.
+
+En cuanto a los operadores, nos hemos fijado que los dos únicos operadores que realmente se usan son el de dividir viaje, que lo que hace es 
+partir un viaje de dos destinos de un mismo camion en dos diferentes de esta manera: Viaje1[P1, P2] → Viaje1[P1] y Viaje2[P2]. Y el de swap 
+de peticiones, que cambia el orden en el que un mismo camión que hace un viaje con dos destinos de esta manera: [G1, G2] → prueba [G2, G1].
+
+
+Resultados experimento especial: Usando ahora los resultados de los experimentos anteriores obtenemos estos resultados:
+
+Heurística inicial: -24711.459507970736
+Heurística final: -25003.459507970736
+
+Beneficio inicial: 89006.91901594147
+Beneficio final: 89046.91901594147

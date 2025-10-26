@@ -1,0 +1,11 @@
+{
+  "java.autobuild.enabled": false,
+  "java.project.sourcePaths": [
+    "src"
+  ],
+  "java.project.referencedLibraries": [
+    "lib/AIMA.jar",
+    "lib/Gasolina.jar"
+  ],
+  "java.project.outputPath": "bin"
+}
