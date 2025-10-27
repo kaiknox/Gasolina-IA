@@ -169,7 +169,7 @@ public class Camion {
                     continue;
                 }
             } catch (Exception ex) {
-                System.out.println("[DEBUG] error building leg: " + ex.getMessage());
+                //System.out.println("[DEBUG] error building leg: " + ex.getMessage());
                 continue;
             }
 
@@ -186,10 +186,10 @@ public class Camion {
                     //System.out.println("[DEBUG] added leg to existing Viajes. new viajes size=" + v.getListaViajes().size());
                     return; // added successfully
                 } catch (IllegalArgumentException | IllegalStateException e) {
-                    System.out.println("[DEBUG] cannot add to this Viajes: " + e.getMessage());
+                    //System.out.println("[DEBUG] cannot add to this Viajes: " + e.getMessage());
                 }
             } else {
-                System.out.println("[DEBUG] cannot add to this Viajes: constraints violated");
+                //System.out.println("[DEBUG] cannot add to this Viajes: constraints violated");
             }
         }
 
@@ -213,7 +213,7 @@ public class Camion {
             return;
         } else {
             // cannot add due to totals; prune
-            System.out.println("[DEBUG] cannot create new Viajes: totals would exceed limits");
+            //System.out.println("[DEBUG] cannot create new Viajes: totals would exceed limits");
             return;
         }
     }

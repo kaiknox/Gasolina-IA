@@ -632,6 +632,7 @@ public class GasolinaBoard {
                 System.out.println("  Petición pendiente con días: " + Peticiones);
             }
         }*/
+        
         List<Camion> camiones = estado_actual.getCamiones();
         for (int i = 0; i < camiones.size(); i++) {
             Camion camion = camiones.get(i);
@@ -651,6 +652,7 @@ public class GasolinaBoard {
                 }
             }
         }
+        
     }
 
     /**
@@ -745,12 +747,16 @@ public class GasolinaBoard {
 
         boolean igual = (totalAsignadas == totalOriginales) && asignadas.equals(originales);
         if (!igual) {
+            /* 
             System.out.println("[INTEGRITY] Discrepancia en peticiones detectada:");
             System.out.println("  Total asignadas: " + totalAsignadas + ", total originales: " + totalOriginales);
             System.out.println("  Distribucion asignadas: " + asignadas);
             System.out.println("  Distribucion originales: " + originales);
+            */
         } else {
+            /*
             System.out.println("[INTEGRITY] Multiconjunto de peticiones OK: total=" + totalAsignadas);
+            */
         }
 
         return igual;
@@ -775,6 +781,6 @@ public class GasolinaBoard {
     }
 
     public void imprimirEstadoPeticiones(){
-        System.out.println("Hay un total de: " + numPeticiones + " y asignadas: "+ peticionesAsignadas.size());
+        //System.out.println("Hay un total de: " + numPeticiones + " y asignadas: "+ peticionesAsignadas.size());
     }
 }
