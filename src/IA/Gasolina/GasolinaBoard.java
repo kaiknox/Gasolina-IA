@@ -53,15 +53,59 @@ public class GasolinaBoard {
         if (viajeGrupo == null || viajeGrupo.getListaViajes().isEmpty()) return;
         
         //System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
-        if(estado_actual.getCamiones().get(idCamionDestino).puedeAñadirViaje() == false) return; // no reasignar si el camión destino no puede añadir más viajes
-        
+        // Quick check: destination must have capacity for another trip group
+        if (camionDestino.puedeAñadirViaje() == false) return; // no reasignar si el camión destino no puede añadir más viajes
+
+        // Extract the non-provisional petitions contained in the viajeGrupo
+        List<PeticionInfo> peticionesDelGrupo = new ArrayList<>();
+        for (Viaje t : viajeGrupo.getListaViajes()) {
+            if (t.isProvisionalReturn()) continue;
+            for (Gasolinera g : gasolineras) {
+                if (g.getCoordX() == t.getCoordX_fin() && g.getCoordY() == t.getCoordY_fin()) {
+                    peticionesDelGrupo.add(new PeticionInfo(g, t.getDiasPendientes()));
+                    break;
+                }
+            }
+        }
+
+        // Build a list of current petitions in destination
+        List<PeticionInfo> peticionesDestino = extraerPeticiones(camionDestino);
+
+        // Simulate: reconstruct a temporary camion from scratch with destino petitions + grupo petitions
+        Camion temp = new Camion(camionDestino.getCoordX(), camionDestino.getCoordY());
         try {
-            estado_actual.getCamiones().get(idCamionDestino).addViaje(viajeGrupo);
-            camionOrigen.fixViajes();
-            camionDestino.fixViajes();
+            // add existing destino petitions
+            for (PeticionInfo p : peticionesDestino) {
+                temp.addPeticion(p.gasolinera, p.diasPendientes);
+            }
+            // add petitions coming from origen group
+            for (PeticionInfo p : peticionesDelGrupo) {
+                temp.addPeticion(p.gasolinera, p.diasPendientes);
+            }
+        } catch (Exception ex) {
+            // Simulation failed -> cannot transfer without losing petitions or violating constraints
+            return;
+        }
+
+        // Verify simulation preserved all petitions (no petitions dropped)
+        int expected = peticionesDestino.size() + peticionesDelGrupo.size();
+        if (temp.contarPeticionesAsignadas() != expected) {
+            // would lose petitions during reconstruction; do not perform reassignment
+            return;
+        }
+
+        // Commit: remove the group from origin and reconstruct destination with combined petitions
+        try {
+            // remove from origin
             viajesOrigen.remove(idViaje);
             estado_actual.getCamiones().get(idCamionOrigen).setViajes(viajesOrigen);
-        } catch (IllegalStateException ex) {
+
+            // reconstruct destination camion with merged petitions
+            List<PeticionInfo> merged = new ArrayList<>(peticionesDestino);
+            merged.addAll(peticionesDelGrupo);
+            reconstruirCamionConPeticiones(camionDestino, merged);
+        } catch (Exception ex) {
+            // If commit fails unexpectedly, we cannot rollback easily here; but we guard by prior simulation
             return;
         }
         //System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());

@@ -134,18 +134,18 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
 
                     Estado estadoCopy = deepCopyEstado(estado);
                     newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
-                    newBoard.dividirViajeEnDos(i, k);
+                    /*newBoard.dividirViajeEnDos(i, k);
                     String accionD = "Dividir viaje " + k + " en camión " + i;
                     java.util.Map<Integer, Integer> nowCounts_div = newBoard.contarPeticionesAsignadas();
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accionD, newBoard));
                     } else {
                         System.out.println("[WARNING] Dividir viaje produciría cambio en multiconjunto; descartar: " + accionD + " original=" + originalAssigned + " now=" + nowCounts_div);
-                    }
+                    }*/
 
                     // Swap genérico (permite idx 0<->1, pero queda abierto si hubiese más)
-                    estadoCopy = deepCopyEstado(estado);
-                    newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
+                    //estadoCopy = deepCopyEstado(estado);
+                    //newBoard = new GasolinaBoard(estadoCopy, board.getGasolineras(), board.getCentros());
                     newBoard.swapPeticionesMismoViaje(i, k);
                     String accionS = "Swap peticiones en viaje " + k + " índices 0<->1 en camión " + i;
                     java.util.Map<Integer, Integer> nowCounts_swap = newBoard.contarPeticionesAsignadas();
