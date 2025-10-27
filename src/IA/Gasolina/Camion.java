@@ -57,6 +57,9 @@ public class Camion {
     public void addViaje(Viajes viajes){
         // Asumimos que el viaje ya ha sido validado antes de añadirlo
         // Añadir un viaje a la lista de viajes del camion
+        if(this.viajesCamion.size() >= maxViajes || ((this.DistanciaRecorrida + viajes.getDistanciaTotal()) >= DistanciaMaxima) || ((this.horasTrabajadas + viajes.getTiempoTotal()) >= HorasJornada)){
+            throw new IllegalStateException("No se pueden añadir más viajes al camión: límite alcanzado.");
+        }
         this.viajesCamion.add(viajes);
         this.DistanciaRecorrida += viajes.getDistanciaTotal();
         this.horasTrabajadas += viajes.getTiempoTotal();
@@ -224,4 +227,16 @@ public class Camion {
     public List<Viajes> getListaViajes() {
         return viajesCamion;
     }
+
+    public int contarPeticionesAsignadas() {
+        int total = 0;
+        for (Viajes vg : viajesCamion) {
+            for (Viaje t : vg.getListaViajes())
+                if(!t.isProvisionalReturn()){
+                    total++;
+                }
+        }
+        return total;
+    }
+
 }

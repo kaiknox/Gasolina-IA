@@ -20,6 +20,7 @@ public class GasolinaBoard {
     private List<Gasolinera> gasolineras;
     private List<Distribucion> centros;
     private List<PeticionInfo> peticionesAsignadas = new ArrayList<>();
+    private List<PeticionInfo> peticionesNoAsignadas = new ArrayList<>();
     public int numPeticiones = 0;
 
     /* Constructor */
@@ -28,6 +29,10 @@ public class GasolinaBoard {
         this.gasolineras = gasolineras;
         this.centros = centros;
     }
+
+    public List<PeticionInfo> getPeticionesNoAsignadas() {
+        return peticionesNoAsignadas;
+    } 
 
     /* OPERADORES */
     // Reasigna un viaje de un camion a otro
@@ -47,37 +52,19 @@ public class GasolinaBoard {
         Viajes viajeGrupo = viajesOrigen.get(idViaje);
         if (viajeGrupo == null || viajeGrupo.getListaViajes().isEmpty()) return;
         
-    System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
-    viajesOrigen.remove(idViaje);
-    estado_actual.getCamiones().get(idCamionOrigen).setViajes(viajesOrigen);
-    estado_actual.getCamiones().get(idCamionDestino).addViaje(viajeGrupo);
-    camionOrigen.fixViajes();
-    camionDestino.fixViajes();
-    System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
-        // Encontrar la primera gasolinera en este Viajes (ignorar tramos de retorno)
-        /*Gasolinera gasolineraAMover = null;
-        int diasPendientesAMover = -1;
-
-        for (Viaje tramo : viajeGrupo.getListaViajes()) {
-            if (tramo.isProvisionalReturn()) continue; // ignorar retornos
-
-            // Buscar esta coordenada en la lista global de gasolineras
-            for (int g = 0; g < gasolineras.size(); g++) {
-                Gasolinera gas = gasolineras.get(g);
-                if (gas.getCoordX() == tramo.getCoordX_fin() && gas.getCoordY() == tramo.getCoordY_fin()) {
-                    gasolineraAMover = gas;
-                    diasPendientesAMover = tramo.getDiasPendientes();
-                    break;
-                }
-            }
-            if (gasolineraAMover != null) break; // encontramos una
+        //System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        if(estado_actual.getCamiones().get(idCamionDestino).puedeAñadirViaje() == false) return; // no reasignar si el camión destino no puede añadir más viajes
+        
+        try {
+            estado_actual.getCamiones().get(idCamionDestino).addViaje(viajeGrupo);
+            camionOrigen.fixViajes();
+            camionDestino.fixViajes();
+            viajesOrigen.remove(idViaje);
+            estado_actual.getCamiones().get(idCamionOrigen).setViajes(viajesOrigen);
+        } catch (IllegalStateException ex) {
+            return;
         }
-
-        if (gasolineraAMover == null || diasPendientesAMover < 0) return;
-
-        // Reconstruir ambos camiones desde cero: usar el valor real de días pendientes
-        reconstruirCamionSinPeticion(camionOrigen, gasolineraAMover, diasPendientesAMover);
-        agregarPeticionACamion(camionDestino, gasolineraAMover, diasPendientesAMover);*/
+        //System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     }
 
     /**
@@ -105,7 +92,7 @@ public class GasolinaBoard {
         Viaje tramoB = viajeGrupoB.getListaViajes().get(idtramoB);
         if (tramoA == null || tramoB == null) return;
 
-        System.out.println("[DEBUG_OP] intercambiarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        //System.out.println("[DEBUG_OP] intercambiarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
         // Extraer listas de peticiones con mapeo a viaje index
         List<PeticionInfo> petA = extraerPeticiones(camionA);
@@ -140,68 +127,66 @@ public class GasolinaBoard {
         reconstruirCamionConPeticiones(camionA, petA);
         reconstruirCamionConPeticiones(camionB, petB);
 
-        System.out.println("[DEBUG_OP] intercambiarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        //System.out.println("[DEBUG_OP] intercambiarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
-        /*if (viajeGrupoA == null || viajeGrupoB == null) return;
-        
-        // Encontrar primera gasolinera de cada Viajes
-        Gasolinera gasA = null, gasB = null;
-        
-        for (Viaje tramo : viajeGrupoA.getListaViajes()) {
-            if (!tramo.isProvisionalReturn()) {
-                for (Gasolinera g : gasolineras) {
-                    if (g.getCoordX() == tramo.getCoordX_fin() && g.getCoordY() == tramo.getCoordY_fin()) {
-                        gasA = g;
-                        break;
-                    }
+    }
+
+    public boolean asignarPeticionNoAsignadaA(int idCamion, int idPeticionNoAsignada) {
+        List<PeticionInfo> noAsignadas = peticionesNoAsignadas;
+        if (idPeticionNoAsignada < 0 || idPeticionNoAsignada >= noAsignadas.size()) {
+            return false; // índice inválido
+        }
+        PeticionInfo p = noAsignadas.get(idPeticionNoAsignada);
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        int antes = camion.contarPeticionesAsignadas();
+        camion.addPeticion(p.gasolinera, p.diasPendientes);
+        int despues = camion.contarPeticionesAsignadas();
+        if(antes < despues) {
+            peticionesNoAsignadas.remove(idPeticionNoAsignada);
+            peticionesAsignadas.add(p);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean swapPeticionNoAsignada(int idCamion, int idViaje, int idTramo, int idPeticionNoAsignada) {
+        List<PeticionInfo> noAsignadas = peticionesNoAsignadas;
+        if (idPeticionNoAsignada < 0 || idPeticionNoAsignada >= noAsignadas.size()) {
+            return false; // índice inválido
+        }
+        PeticionInfo p = noAsignadas.get(idPeticionNoAsignada);
+        Camion camion = estado_actual.getCamiones().get(idCamion);
+        List<Viajes> viajes = camion.getViajes();
+        if (idViaje < 0 || idViaje >= viajes.size()) return false;
+        Viajes viajeGrupo = viajes.get(idViaje);
+        if (viajeGrupo == null) return false;
+        List<Viaje> tramos = viajeGrupo.getListaViajes();
+        if (idTramo < 0 || idTramo >= tramos.size()) return false;  
+        Viaje tramoExistente = tramos.get(idTramo);
+        if(idTramo==0){
+            tramos.set(idTramo,new Viaje(camion.getCoordX(), camion.getCoordY(), p.gasolinera.getCoordX(), p.gasolinera.getCoordY(), p.diasPendientes));
+            noAsignadas.remove(idPeticionNoAsignada);
+            for(Gasolinera g: gasolineras){
+                if(g.getCoordX() == tramoExistente.getCoordX_fin() && g.getCoordY() == tramoExistente.getCoordY_fin()){
+                    noAsignadas.add(new PeticionInfo(g, tramoExistente.getDiasPendientes()));
+                    break;
                 }
-                if (gasA != null) break;
             }
+            return true;
         }
-        
-        for (Viaje tramo : viajeGrupoB.getListaViajes()) {
-            if (!tramo.isProvisionalReturn()) {
-                for (Gasolinera g : gasolineras) {
-                    if (g.getCoordX() == tramo.getCoordX_fin() && g.getCoordY() == tramo.getCoordY_fin() && tramo.getDiasPendientes() == ) {
-                        gasB = g;
-                        break;
-                    }
+        else if (idTramo==1){
+            tramos.set(idTramo,new Viaje(tramoExistente.getCoordX_inicio(), tramoExistente.getCoordY_inicio(), p.gasolinera.getCoordX(), p.gasolinera.getCoordY(), p.diasPendientes));
+            noAsignadas.remove(idPeticionNoAsignada);
+            for(Gasolinera g: gasolineras){
+                if(g.getCoordX() == tramoExistente.getCoordX_fin() && g.getCoordY() == tramoExistente.getCoordY_fin()){
+                    noAsignadas.add(new PeticionInfo(g, tramoExistente.getDiasPendientes()));
+                    break;
                 }
-                if (gasB != null) break;
             }
+            return true;
         }
-        
-        if (gasA == null || gasB == null) return;
-        
-        // Reconstruir ambos camiones intercambiando las peticiones
-        List<PeticionInfo> peticionesA = extraerPeticiones(camionA);
-        List<PeticionInfo> peticionesB = extraerPeticiones(camionB);
-        
-        // Eliminar las peticiones a intercambiar
-        PeticionInfo petA = null, petB = null;
-        for (PeticionInfo p : peticionesA) {
-            if (p.gasolinera == gasA) {
-                petA = p;
-                break;
-            }
-        }
-        for (PeticionInfo p : peticionesB) {
-            if (p.gasolinera == gasB) {
-                petB = p;
-                break;
-            }
-        }
-        
-        if (petA == null || petB == null) return;
-        
-        peticionesA.remove(petA);
-        peticionesB.remove(petB);
-        peticionesA.add(petB);
-        peticionesB.add(petA);
-        
-        // Reconstruir camiones
-        reconstruirCamionConPeticiones(camionA, peticionesA);
-        reconstruirCamionConPeticiones(camionB, peticionesB);*/
+        return false;
     }
 
     /**
@@ -271,7 +256,7 @@ public class GasolinaBoard {
         int d1 = leg0.getDiasPendientes();
         int d2 = leg1.getDiasPendientes();
 
-    System.out.println("[DEBUG_OP] dividirAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        //System.out.println("[DEBUG_OP] dividirAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     // Validación de número de viajes: dividir añade +1 neto
         if (viajes.size() >= Camion.maxViajes) return;
 
@@ -307,13 +292,13 @@ public class GasolinaBoard {
             camion.fixViajes();
         } catch (Exception ex) {
             // Revertir cambios si algo sale mal al construir/añadir los viajes
-            System.out.println("[DEBUG_OP] dividir aborted: " + ex.getMessage());
+            //System.out.println("[DEBUG_OP] dividir aborted: " + ex.getMessage());
             camion.setViajes(backupViajes);
             camion.setDistanciaRecorrida(backupDist);
             camion.setHorasTrabajadas(backupHoras);
             return;
         }
-        System.out.println("[DEBUG_OP] dividirDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        //System.out.println("[DEBUG_OP] dividirDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     }
 
         /**
@@ -325,7 +310,7 @@ public class GasolinaBoard {
             List<Viajes> viajes = camion.getViajes();
             if (idViajeOrigen >= viajes.size() || idViajeDestino >= viajes.size() || idViajeOrigen == idViajeDestino) return;
 
-            System.out.println("[DEBUG_OP] moverAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+            //System.out.println("[DEBUG_OP] moverAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
             // Extraer todas las peticiones del camión junto con su viaje origen (mapping)
             List<PeticionInfo> allPeticiones = new ArrayList<>();
@@ -382,7 +367,7 @@ public class GasolinaBoard {
             // Reconstruir el camión con la nueva lista de peticiones
             reconstruirCamionConPeticiones(camion, allPeticiones);
 
-            System.out.println("[DEBUG_OP] moverDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+            //System.out.println("[DEBUG_OP] moverDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
         }
     // FUNCIONES AUXILIARES
     
@@ -425,7 +410,7 @@ public class GasolinaBoard {
         // (queremos MINIMIZAR distancia y MAXIMIZAR beneficio)
         double heuristica = (perdidaTotal) + (distanciaTotal*2) - beneficioTotal; // Dist - beneficio * 2--> + beneficio perdido si lo dejamos para mañana
 
-        System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ", perdida=" + perdidaTotal + ")");
+        //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ", perdida=" + perdidaTotal + ")");
         return heuristica;
         
         //return -calcularBeneficio();
@@ -447,6 +432,18 @@ public class GasolinaBoard {
         else if (funcionAescoger == 2) {
             crearEstadoInicial2();
         }
+    }
+
+    /**
+     * Copia las listas de peticiones desde otro GasolinaBoard (usado al crear sucesores).
+     */
+    public void copyPeticionesFrom(GasolinaBoard other) {
+        if (other == null) return;
+        this.peticionesAsignadas = new ArrayList<>();
+        this.peticionesNoAsignadas = new ArrayList<>();
+        if (other.peticionesAsignadas != null) this.peticionesAsignadas.addAll(other.peticionesAsignadas);
+        if (other.peticionesNoAsignadas != null) this.peticionesNoAsignadas.addAll(other.peticionesNoAsignadas);
+        this.numPeticiones = other.numPeticiones;
     }
 
     private void crearEstadoInicial1() {
@@ -485,9 +482,17 @@ public class GasolinaBoard {
 
                 if (bestCamion >= 0) {
                     System.out.println("-> Asignando petición a camión " + bestCamion + " con días pendientes " + diasPendientes);
-                    peticionesAsignadas.add(new PeticionInfo(g, diasPendientes));
-                    estado_actual.getCamiones().get(bestCamion).addPeticion(g, diasPendientes);
-                    estado_actual.getCamiones().get(bestCamion).fixViajes();
+                    Camion candidato = estado_actual.getCamiones().get(bestCamion);
+                    int antes = candidato.contarPeticionesAsignadas();
+                    candidato.addPeticion(g, diasPendientes);
+                    candidato.fixViajes();
+                    int despues = candidato.contarPeticionesAsignadas();
+                    if (despues > antes) {
+                        peticionesAsignadas.add(new PeticionInfo(g, diasPendientes));
+                    } else {
+                        // No pudo asignarse por restricciones -> marcar como no asignada
+                        peticionesNoAsignadas.add(new PeticionInfo(g, diasPendientes));
+                    }
                 }
             }
         }
@@ -507,8 +512,16 @@ public class GasolinaBoard {
             numPeticiones += peticiones.size();
             for (int d = 0; d < peticiones.size(); d++) {
                 int diasPendientes = peticiones.get(d);
-                estado_actual.getCamiones().get(camionIndex).addPeticion(g, diasPendientes);
-                peticionesAsignadas.add(new PeticionInfo(g, diasPendientes));
+                Camion candidato = estado_actual.getCamiones().get(camionIndex);
+                int antes = candidato.contarPeticionesAsignadas();
+                candidato.addPeticion(g, diasPendientes);
+                candidato.fixViajes();
+                int despues = candidato.contarPeticionesAsignadas();
+                if (despues > antes) {
+                    peticionesAsignadas.add(new PeticionInfo(g, diasPendientes));
+                } else {
+                    peticionesNoAsignadas.add(new PeticionInfo(g, diasPendientes));
+                }
                 camionIndex = (camionIndex + 1) % nCamiones;
             }
         }
@@ -525,7 +538,7 @@ public class GasolinaBoard {
      * Reconstruye un camión eliminando una petición específica.
      * Extrae todas las peticiones actuales, elimina la especificada, y reconstruye desde cero.
      */
-    private void reconstruirCamionSinPeticion(Camion camion, Gasolinera gasolineraAEliminar, int diasP) {
+    public void reconstruirCamionSinPeticion(Camion camion, Gasolinera gasolineraAEliminar, int diasP) {
         // Extraer todas las peticiones actuales del camión
         List<PeticionInfo> peticionesActuales = extraerPeticiones(camion);
         
@@ -591,7 +604,7 @@ public class GasolinaBoard {
     /**
      * Clase auxiliar para almacenar información de peticiones
      */
-    private static class PeticionInfo {
+    public static class PeticionInfo {
         Gasolinera gasolinera;
         int diasPendientes;
         

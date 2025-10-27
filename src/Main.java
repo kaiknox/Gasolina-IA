@@ -198,7 +198,7 @@ public class Main {
     int camionIdx = 0;
     for (Camion c : estadoFinal.getEstado_actual().getCamiones()) {
         int total = 0, nonProv = 0;
-        System.out.println("Camión " + camionIdx + ": coord=(" + c.getCoordX() + "," + c.getCoordY() + ")");
+        System.out.println("Camión " + camionIdx + ": coord=(" + c.getCoordX() + "," + c.getCoordY() + ")" + ", distanciaTotal=" + c.getDistanciaRecorrida() + ", tiempoTotal=" + c.getHorasTrabajadas() + ")");
         for (Viajes vg : c.getViajes()) {
             for (Viaje t : vg.getListaViajes()) {
                 total++;
