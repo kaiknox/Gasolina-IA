@@ -55,7 +55,7 @@ public class Viajes {
         int before = listaViajes.size();
         distanciaTotal += viaje.getDistanciaTotal();
         tiempoTotal += viaje.getTiempoTotal();
-        //System.out.println("[DEBUG] añadiendo viaje al camion." + camion.getCoordX() + "," + camion.getCoordY() + ", before=" + before + ", viaje=(" + viaje.getCoordX_inicio() + "," + viaje.getCoordY_inicio() + ")->(" + viaje.getCoordX_fin() + "," + viaje.getCoordY_fin() + "), distanciaTotal=" + distanciaTotal + ", tiempoTotal=" + tiempoTotal);
+        ////System.out.println("[DEBUG] añadiendo viaje al camion." + camion.getCoordX() + "," + camion.getCoordY() + ", before=" + before + ", viaje=(" + viaje.getCoordX_inicio() + "," + viaje.getCoordY_inicio() + ")->(" + viaje.getCoordX_fin() + "," + viaje.getCoordY_fin() + "), distanciaTotal=" + distanciaTotal + ", tiempoTotal=" + tiempoTotal);
         if (before == 0) {
             listaViajes.add(viaje);
             // add provisional return: from this.gasolinera (viaje end) back to camion center
@@ -71,7 +71,7 @@ public class Viajes {
                     // remove provisional totals
                     distanciaTotal -= maybeProvisional.getDistanciaTotal();
                     tiempoTotal -= maybeProvisional.getTiempoTotal();
-                    //System.out.println("[DEBUG] replacing provisional return with real intermediate leg Provisional=(" + maybeProvisional.getCoordX_inicio() + "," + maybeProvisional.getCoordY_inicio() + ")->(" + maybeProvisional.getCoordX_fin() + "," + maybeProvisional.getCoordY_fin() + ")");
+                    ////System.out.println("[DEBUG] replacing provisional return with real intermediate leg Provisional=(" + maybeProvisional.getCoordX_inicio() + "," + maybeProvisional.getCoordY_inicio() + ")->(" + maybeProvisional.getCoordX_fin() + "," + maybeProvisional.getCoordY_fin() + ")");
                     listaViajes.set(1, viaje); // replace provisional with real intermediate
                     // add final return from this new viaje end back to center
                     Viaje finalReturn = new Viaje(viaje.getCoordX_fin(), viaje.getCoordY_fin(), camion.getCoordX(), camion.getCoordY(), 0, true);
@@ -120,15 +120,21 @@ public class Viajes {
     }
 
     public void fixProvisionalReturn(){
+        boolean prov = false;
         for (int i=0; i<listaViajes.size(); i++){
             Viaje v = listaViajes.get(i);
-            if(3==listaViajes.size()) {
+            if(listaViajes.size()==3) {
                 if(i==2) v.setProvisionalReturn(true);
                 else v.setProvisionalReturn(false);
+
             }
-            else if(2==listaViajes.size()) {
-                if(i==1) v.setProvisionalReturn(true);
-                else v.setProvisionalReturn(false);
+            else if(listaViajes.size()==2) {
+                if(i==1) {
+                    if(v.getCoordX_fin()!=listaViajes.get(0).getCoordX_inicio() || v.getCoordY_fin()!=listaViajes.get(0).getCoordY_inicio()){
+                        listaViajes.add(new Viaje(v.getCoordX_fin(), v.getCoordY_fin(), listaViajes.get(0).getCoordX_inicio(), listaViajes.get(0).getCoordY_inicio(), 0, true));
+                    }
+                    else v.setProvisionalReturn(true);
+                } else v.setProvisionalReturn(false);
             }
         }
     }

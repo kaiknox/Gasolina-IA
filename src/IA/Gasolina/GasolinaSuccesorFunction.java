@@ -48,11 +48,11 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                             Viaje t = vg.getListaViajes().get(tt);
                             sb.append("[#").append(tt).append(" d=").append(t.getDiasPendientes()).append(" prov=").append(t.isProvisionalReturn()).append(") ");
                         }
-                        System.out.println(sb.toString());
+                        //System.out.println(sb.toString());
                     } catch (Exception e) {
-                        System.out.println("[TRACE_REASIGN] no viajeGroup available for origin=" + i + " k=" + k + " : " + e.getMessage());
+                        //System.out.println("[TRACE_REASIGN] no viajeGroup available for origin=" + i + " k=" + k + " : " + e.getMessage());
                     }
-                    System.out.println("[TRACE_REASIGN] BEFORE reasignar: camion=" + i + "->" + j + " k=" + k + " counts=" + beforeMap + " total=" + beforeTotal);
+                    //System.out.println("[TRACE_REASIGN] BEFORE reasignar: camion=" + i + "->" + j + " k=" + k + " counts=" + beforeMap + " total=" + beforeTotal);
                     newBoard.reasignarViajes(i, j, k);
                     java.util.Map<Integer, Integer> afterMap = newBoard.contarPeticionesAsignadas();
                     int afterTotal = 0; for (int vv : afterMap.values()) afterTotal += vv;
@@ -66,18 +66,18 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                             Viaje t = last.getListaViajes().get(tt);
                             sb2.append("[#").append(tt).append(" d=").append(t.getDiasPendientes()).append(" prov=").append(t.isProvisionalReturn()).append(") ");
                         }
-                        System.out.println(sb2.toString());
+                        //System.out.println(sb2.toString());
                     } catch (Exception e) {
-                        System.out.println("[TRACE_REASIGN] no dest viajeGroup after move dest=" + j + " : " + e.getMessage());
+                        //System.out.println("[TRACE_REASIGN] no dest viajeGroup after move dest=" + j + " : " + e.getMessage());
                     }
-                    System.out.println("[TRACE_REASIGN] AFTER reasignar:  camion=" + i + "->" + j + " k=" + k + " counts=" + afterMap + " total=" + afterTotal);
+                    //System.out.println("[TRACE_REASIGN] AFTER reasignar:  camion=" + i + "->" + j + " k=" + k + " counts=" + afterMap + " total=" + afterTotal);
                     String accion = "Reasignar viaje " + k + " de camión " + i + " a camión " + j;
                     // Diagnostics: compare totals before/after. Reasignar debería preservar el total.
                     java.util.Map<Integer, Integer> nowCounts_reasign = newBoard.contarPeticionesAsignadas();
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accion, newBoard));
                     } else {
-                        System.out.println("[WARNING] Reasignar viaje produciría cambio en multiconjunto; descartar: " + accion + " original=" + originalAssigned + " now=" + nowCounts_reasign);
+                        //System.out.println("[WARNING] Reasignar viaje produciría cambio en multiconjunto; descartar: " + accion + " original=" + originalAssigned + " now=" + nowCounts_reasign);
                     }
                 }
             }
@@ -106,7 +106,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                                 if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                                     retval.add(new Successor(accionI, newBoard));
                                 } else {
-                                    System.out.println("[WARNING] Intercambio produciría cambio en multiconjunto; descartar: " + accionI + " original=" + originalAssigned + " now=" + nowCounts_interc);
+                                    //System.out.println("[WARNING] Intercambio produciría cambio en multiconjunto; descartar: " + accionI + " original=" + originalAssigned + " now=" + nowCounts_interc);
                                 }
                             }
                         }
@@ -140,7 +140,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accionD, newBoard));
                     } else {
-                        System.out.println("[WARNING] Dividir viaje produciría cambio en multiconjunto; descartar: " + accionD + " original=" + originalAssigned + " now=" + nowCounts_div);
+                        //System.out.println("[WARNING] Dividir viaje produciría cambio en multiconjunto; descartar: " + accionD + " original=" + originalAssigned + " now=" + nowCounts_div);
                     }*/
 
                     // Swap genérico (permite idx 0<->1, pero queda abierto si hubiese más)
@@ -152,7 +152,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accionS, newBoard));
                     } else {
-                        System.out.println("[WARNING] Swap dentro de viaje produciría cambio en multiconjunto; descartar: " + accionS + " original=" + originalAssigned + " now=" + nowCounts_swap);
+                        //System.out.println("[WARNING] Swap dentro de viaje produciría cambio en multiconjunto; descartar: " + accionS + " original=" + originalAssigned + " now=" + nowCounts_swap);
                     }
                 }
             }
@@ -183,14 +183,14 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                         if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                             retval.add(new Successor(accionM, newBoard));
                         } else {
-                            System.out.println("[WARNING] Mover petición produciría cambio en multiconjunto; descartar: " + accionM + " original=" + originalAssigned + " now=" + nowCounts_mov);
+                            //System.out.println("[WARNING] Mover petición produciría cambio en multiconjunto; descartar: " + accionM + " original=" + originalAssigned + " now=" + nowCounts_mov);
                         }
                     }
                 }
             }
         }
 
-    System.out.println("[DEBUG_NOASIGN] original unassigned size=" + board.getPeticionesNoAsignadas().size() + " originalAssigned=" + originalAssigned);
+    //System.out.println("[DEBUG_NOASIGN] original unassigned size=" + board.getPeticionesNoAsignadas().size() + " originalAssigned=" + originalAssigned);
     for(int a= 0; a<n;a++){
             Camion camion = camiones.get(a);
             List<GasolinaBoard.PeticionInfo> noAsign = board.getPeticionesNoAsignadas();
@@ -202,9 +202,9 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                 boolean success = newBoard.asignarPeticionNoAsignadaA(a, i);
                 if (success) {
                     String accion = "Asignar petición no asignada " + i + " al camión " + a;
-                    System.out.println("[DEBUG_OP_ATTEMPT] " + accion);
-                    System.out.println("[DEBUG_OP_COUNTS] original=" + originalAssigned + " now=" + newBoard.contarPeticionesAsignadas());
-                    System.out.println("[DEBUG_OP_OK] Sucesor aceptado: " + accion);
+                    //System.out.println("[DEBUG_OP_ATTEMPT] " + accion);
+                    //System.out.println("[DEBUG_OP_COUNTS] original=" + originalAssigned + " now=" + newBoard.contarPeticionesAsignadas());
+                    //System.out.println("[DEBUG_OP_OK] Sucesor aceptado: " + accion);
                     retval.add(new Successor(accion, newBoard));
                 }
                 List<Viajes> viajes = camion.getListaViajes();
@@ -218,9 +218,9 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                         success = newBoard.swapPeticionNoAsignada(a, j, k, i);
                         if (success) {
                             String accion = "Swap petición no asignada " + i + " con tramo " + k + " del viaje " + j + " en camión " + a;
-                            System.out.println("[DEBUG_OP_ATTEMPT] " + accion);
-                            System.out.println("[DEBUG_OP_COUNTS] original=" + originalAssigned + " now=" + newBoard.contarPeticionesAsignadas());
-                            System.out.println("[DEBUG_OP_OK] Sucesor aceptado: " + accion);
+                            //System.out.println("[DEBUG_OP_ATTEMPT] " + accion);
+                            //System.out.println("[DEBUG_OP_COUNTS] original=" + originalAssigned + " now=" + newBoard.contarPeticionesAsignadas());
+                            //System.out.println("[DEBUG_OP_OK] Sucesor aceptado: " + accion);
                             retval.add(new Successor(accion, newBoard));
                         }
                 }
@@ -228,9 +228,9 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
             }
         }
 
-        /*System.out.println("[DEBUG] Vecinos generados: " + retval.size());
+        /*//System.out.println("[DEBUG] Vecinos generados: " + retval.size());
         for (Successor s : retval) {
-            System.out.println("  - " + s.getAction());
+            //System.out.println("  - " + s.getAction());
         }*/
 
         return retval;

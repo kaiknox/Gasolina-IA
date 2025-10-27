@@ -144,8 +144,8 @@ public class Camion {
         // Create the new Viaje for this petition
         Viaje viaje = new Viaje(this.coordX, this.coordY, gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
 
-        //System.out.println("[DEBUG] addPeticion: camion at ("+coordX+","+coordY+") trying to add viaje to "+gasolinera+" (dist="+viaje.getDistanciaTotal()+", tiempo="+viaje.getTiempoTotal()+")");
-        //System.out.println("[DEBUG] current viajes count="+this.viajesCamion.size()+", distanciaRec="+this.DistanciaRecorrida+", horasTrab="+this.horasTrabajadas);
+        ////System.out.println("[DEBUG] addPeticion: camion at ("+coordX+","+coordY+") trying to add viaje to "+gasolinera+" (dist="+viaje.getDistanciaTotal()+", tiempo="+viaje.getTiempoTotal()+")");
+        ////System.out.println("[DEBUG] current viajes count="+this.viajesCamion.size()+", distanciaRec="+this.DistanciaRecorrida+", horasTrab="+this.horasTrabajadas);
 
         // Build the leg according to current state of existing Viajes in the camion.
         // If there is an open Viajes with size 0 -> need primer tramo (centro->gasolinera)
@@ -155,7 +155,7 @@ public class Camion {
         for (Viajes v : this.viajesCamion) {
             if (v == null) continue;
             int currentSize = v.getListaViajes().size();
-            //System.out.println("[DEBUG] checking existing Viajes (size=" + currentSize + ") puedeAñadir=" + v.puedeAñadir());
+            ////System.out.println("[DEBUG] checking existing Viajes (size=" + currentSize + ") puedeAñadir=" + v.puedeAñadir());
             if (!v.puedeAñadir()) continue;
 
             Viaje leg;
@@ -169,34 +169,34 @@ public class Camion {
                     continue;
                 }
             } catch (Exception ex) {
-                //System.out.println("[DEBUG] error building leg: " + ex.getMessage());
+                ////System.out.println("[DEBUG] error building leg: " + ex.getMessage());
                 continue;
             }
 
             double nuevaDist = this.DistanciaRecorrida + leg.getDistanciaTotal();
             double nuevasHoras = this.horasTrabajadas + leg.getTiempoTotal();
-            //System.out.println("dist actual=" + this.DistanciaRecorrida + " dist=" + nuevaDist + " vs max=" + DistanciaMaxima + ", horas actuales=" + this.horasTrabajadas + " horas=" + nuevasHoras + " vs max=" + HorasJornada);
+            ////System.out.println("dist actual=" + this.DistanciaRecorrida + " dist=" + nuevaDist + " vs max=" + DistanciaMaxima + ", horas actuales=" + this.horasTrabajadas + " horas=" + nuevasHoras + " vs max=" + HorasJornada);
             if ((nuevaDist <= DistanciaMaxima) && (nuevasHoras <= HorasJornada)) {
-                //System.out.println("[DEBUG] can add to this Viajes: adding leg of type size=" + currentSize);
+                ////System.out.println("[DEBUG] can add to this Viajes: adding leg of type size=" + currentSize);
                 try {
                     v.añadirViaje(leg, this);
                     // update camion totals
                     this.DistanciaRecorrida = nuevaDist;
                     this.horasTrabajadas = nuevasHoras;
-                    //System.out.println("[DEBUG] added leg to existing Viajes. new viajes size=" + v.getListaViajes().size());
+                    ////System.out.println("[DEBUG] added leg to existing Viajes. new viajes size=" + v.getListaViajes().size());
                     return; // added successfully
                 } catch (IllegalArgumentException | IllegalStateException e) {
-                    //System.out.println("[DEBUG] cannot add to this Viajes: " + e.getMessage());
+                    ////System.out.println("[DEBUG] cannot add to this Viajes: " + e.getMessage());
                 }
             } else {
-                //System.out.println("[DEBUG] cannot add to this Viajes: constraints violated");
+                ////System.out.println("[DEBUG] cannot add to this Viajes: constraints violated");
             }
         }
 
         // No existing Viajes had space or constraints would be violated. Try to create a new Viajes if camion allows another trip group.
         if (!this.puedeAñadirViaje()) {
             // cannot add another Viajes due to camion-level constraints: prune and do nothing
-            //System.out.println("[DEBUG] cannot create new Viajes: camion cannot accept more trips or limits reached");
+            ////System.out.println("[DEBUG] cannot create new Viajes: camion cannot accept more trips or limits reached");
             return;
         }
 
@@ -205,15 +205,15 @@ public class Camion {
         Viaje firstLeg = new Viaje(this.coordX, this.coordY, gasolinera.getCoordX(), gasolinera.getCoordY(), diasPendientes);
         //Viaje vuelta = new Viaje(gasolinera.getCoordX(), gasolinera.getCoordY(), this.coordX, this.coordY, 0);
         if ((this.DistanciaRecorrida + firstLeg.getDistanciaTotal()*2) <= DistanciaMaxima && (this.horasTrabajadas + firstLeg.getTiempoTotal()*2) <= HorasJornada) {
-            //System.out.println("[DEBUG] creating new Viajes and adding first leg");
+            ////System.out.println("[DEBUG] creating new Viajes and adding first leg");
             nuevo.añadirViaje(firstLeg, this);
             //nuevo.añadirViaje(vuelta, this);
             addViaje(nuevo); // this updates DistanciaRecorrida and HorasTrabajadas
-            //System.out.println("[DEBUG] added new Viajes. camion viajes count=" + this.viajesCamion.size() + ", distanciaRec=" + this.DistanciaRecorrida + ", horasTrab=" + this.horasTrabajadas);
+            ////System.out.println("[DEBUG] added new Viajes. camion viajes count=" + this.viajesCamion.size() + ", distanciaRec=" + this.DistanciaRecorrida + ", horasTrab=" + this.horasTrabajadas);
             return;
         } else {
             // cannot add due to totals; prune
-            //System.out.println("[DEBUG] cannot create new Viajes: totals would exceed limits");
+            ////System.out.println("[DEBUG] cannot create new Viajes: totals would exceed limits");
             return;
         }
     }

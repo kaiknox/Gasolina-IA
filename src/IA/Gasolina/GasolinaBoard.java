@@ -52,7 +52,7 @@ public class GasolinaBoard {
         Viajes viajeGrupo = viajesOrigen.get(idViaje);
         if (viajeGrupo == null || viajeGrupo.getListaViajes().isEmpty()) return;
         
-        //System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] reasignarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
         // Quick check: destination must have capacity for another trip group
         if (camionDestino.puedeAñadirViaje() == false) return; // no reasignar si el camión destino no puede añadir más viajes
 
@@ -108,7 +108,7 @@ public class GasolinaBoard {
             // If commit fails unexpectedly, we cannot rollback easily here; but we guard by prior simulation
             return;
         }
-        //System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] reasignarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     }
 
     /**
@@ -136,7 +136,7 @@ public class GasolinaBoard {
         Viaje tramoB = viajeGrupoB.getListaViajes().get(idtramoB);
         if (tramoA == null || tramoB == null) return;
 
-        //System.out.println("[DEBUG_OP] intercambiarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] intercambiarAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
         // Extraer listas de peticiones con mapeo a viaje index
         List<PeticionInfo> petA = extraerPeticiones(camionA);
@@ -171,7 +171,7 @@ public class GasolinaBoard {
         reconstruirCamionConPeticiones(camionA, petA);
         reconstruirCamionConPeticiones(camionB, petB);
 
-        //System.out.println("[DEBUG_OP] intercambiarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] intercambiarDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
     }
 
@@ -217,6 +217,7 @@ public class GasolinaBoard {
                     break;
                 }
             }
+            camion.fixViajes();
             return true;
         }
         else if (idTramo==1){
@@ -228,6 +229,7 @@ public class GasolinaBoard {
                     break;
                 }
             }
+            camion.fixViajes();
             return true;
         }
         return false;
@@ -300,7 +302,7 @@ public class GasolinaBoard {
         int d1 = leg0.getDiasPendientes();
         int d2 = leg1.getDiasPendientes();
 
-        //System.out.println("[DEBUG_OP] dividirAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] dividirAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     // Validación de número de viajes: dividir añade +1 neto
         if (viajes.size() >= Camion.maxViajes) return;
 
@@ -336,13 +338,13 @@ public class GasolinaBoard {
             camion.fixViajes();
         } catch (Exception ex) {
             // Revertir cambios si algo sale mal al construir/añadir los viajes
-            //System.out.println("[DEBUG_OP] dividir aborted: " + ex.getMessage());
+            ////System.out.println("[DEBUG_OP] dividir aborted: " + ex.getMessage());
             camion.setViajes(backupViajes);
             camion.setDistanciaRecorrida(backupDist);
             camion.setHorasTrabajadas(backupHoras);
             return;
         }
-        //System.out.println("[DEBUG_OP] dividirDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+        ////System.out.println("[DEBUG_OP] dividirDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
     }
 
         /**
@@ -354,7 +356,7 @@ public class GasolinaBoard {
             List<Viajes> viajes = camion.getViajes();
             if (idViajeOrigen >= viajes.size() || idViajeDestino >= viajes.size() || idViajeOrigen == idViajeDestino) return;
 
-            //System.out.println("[DEBUG_OP] moverAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+            ////System.out.println("[DEBUG_OP] moverAntes: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
 
             // Extraer todas las peticiones del camión junto con su viaje origen (mapping)
             List<PeticionInfo> allPeticiones = new ArrayList<>();
@@ -410,8 +412,9 @@ public class GasolinaBoard {
 
             // Reconstruir el camión con la nueva lista de peticiones
             reconstruirCamionConPeticiones(camion, allPeticiones);
+            camion.fixViajes();
 
-            //System.out.println("[DEBUG_OP] moverDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
+            ////System.out.println("[DEBUG_OP] moverDespues: asignadas=" + contarPeticionesAsignadas() + " tam=" + contarPeticionesAsignadas().values().stream().mapToInt(Integer::intValue).sum());
         }
     // FUNCIONES AUXILIARES
     
@@ -454,7 +457,7 @@ public class GasolinaBoard {
         // (queremos MINIMIZAR distancia y MAXIMIZAR beneficio)
         double heuristica = (perdidaTotal) + (distanciaTotal*2) - beneficioTotal; // Dist - beneficio * 2--> + beneficio perdido si lo dejamos para mañana
 
-        //System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ", perdida=" + perdidaTotal + ")");
+        ////System.out.println("[DEBUG] Heurística: " + heuristica + " (beneficio=" + beneficioTotal + ", dist=" + distanciaTotal + ", perdida=" + perdidaTotal + ")");
         return heuristica;
         
         //return -calcularBeneficio();
@@ -509,15 +512,15 @@ public class GasolinaBoard {
 
             for (int d = 0; d < peticiones.size(); d++) {
                 int diasPendientes = peticiones.get(d);
-                System.out.println("Asignando petición de días: " + diasPendientes + ", de gasolinera " + gIndex);
+                //System.out.println("Asignando petición de días: " + diasPendientes + ", de gasolinera " + gIndex);
                 // find nearest camion
                 int bestCamion = -1;
                 double bestDist = Double.MAX_VALUE;
                 for (int c = 0; c < estado_actual.getCamiones().size(); c++) {
-                    System.out.print("Evaluando camión " + c + " para gasolinera " + gIndex);
+                    //System.out.print("Evaluando camión " + c + " para gasolinera " + gIndex);
                     Camion camion = estado_actual.getCamiones().get(c);
                     double dist = distancia(camion.getCoordX(), camion.getCoordY(), g.getCoordX(), g.getCoordY());
-                    System.out.println(", distancia = " + dist);
+                    //System.out.println(", distancia = " + dist);
                     if (dist < bestDist) {
                         bestDist = dist;
                         bestCamion = c;
@@ -525,7 +528,7 @@ public class GasolinaBoard {
                 }
 
                 if (bestCamion >= 0) {
-                    System.out.println("-> Asignando petición a camión " + bestCamion + " con días pendientes " + diasPendientes);
+                    //System.out.println("-> Asignando petición a camión " + bestCamion + " con días pendientes " + diasPendientes);
                     Camion candidato = estado_actual.getCamiones().get(bestCamion);
                     int antes = candidato.contarPeticionesAsignadas();
                     candidato.addPeticion(g, diasPendientes);
@@ -669,30 +672,30 @@ public class GasolinaBoard {
     //CONSULTORAS
 
     public void escribirEstadoActual() {
-        /*System.out.println("Estado actual del GasolinaBoard:");
+        /*//System.out.println("Estado actual del GasolinaBoard:");
         for (Gasolinera gasolinera : gasolineras) {
-            System.out.println("Gasolinera en (" + gasolinera.getCoordX() + "," + gasolinera.getCoordY() + ")");
+            //System.out.println("Gasolinera en (" + gasolinera.getCoordX() + "," + gasolinera.getCoordY() + ")");
             for(int Peticiones : gasolinera.getPeticiones()) {
-                System.out.println("  Petición pendiente con días: " + Peticiones);
+                //System.out.println("  Petición pendiente con días: " + Peticiones);
             }
         }*/
         
         List<Camion> camiones = estado_actual.getCamiones();
         for (int i = 0; i < camiones.size(); i++) {
             Camion camion = camiones.get(i);
-            System.out.println("Camión " + i + ":");
-            System.out.println("  Distancia recorrida: " + camion.getDistanciaRecorrida());
-            System.out.println("  Horas trabajadas: " + camion.getHorasTrabajadas());
+            //System.out.println("Camión " + i + ":");
+            //System.out.println("  Distancia recorrida: " + camion.getDistanciaRecorrida());
+            //System.out.println("  Horas trabajadas: " + camion.getHorasTrabajadas());
             List<Viajes> viajes = camion.getViajes();
             for (int j = 0; j < viajes.size(); j++) {
                 Viajes viajeGrupo = viajes.get(j);
-                System.out.println("    Viaje " + j + ":");
-                System.out.println("      Distancia total: " + viajeGrupo.getDistanciaTotal());
-                System.out.println("      Tiempo total: " + viajeGrupo.getTiempoTotal());
+                //System.out.println("    Viaje " + j + ":");
+                //System.out.println("      Distancia total: " + viajeGrupo.getDistanciaTotal());
+                //System.out.println("      Tiempo total: " + viajeGrupo.getTiempoTotal());
                 List<Viaje> tramos = viajeGrupo.getListaViajes();
                 for (int k = 0; k < tramos.size(); k++) {
                     Viaje tramo = tramos.get(k);
-                    System.out.println("        Tramo " + k + ": (" + tramo.getCoordX_inicio() + "," + tramo.getCoordY_inicio() + ") -> (" + tramo.getCoordX_fin() + "," + tramo.getCoordY_fin() + "), Días pendientes: " + tramo.getDiasPendientes() + (tramo.isProvisionalReturn() ? " [Retorno Provisional]" : ""));
+                    //System.out.println("        Tramo " + k + ": (" + tramo.getCoordX_inicio() + "," + tramo.getCoordY_inicio() + ") -> (" + tramo.getCoordX_fin() + "," + tramo.getCoordY_fin() + "), Días pendientes: " + tramo.getDiasPendientes() + (tramo.isProvisionalReturn() ? " [Retorno Provisional]" : ""));
                 }
             }
         }
@@ -792,14 +795,14 @@ public class GasolinaBoard {
         boolean igual = (totalAsignadas == totalOriginales) && asignadas.equals(originales);
         if (!igual) {
             /* 
-            System.out.println("[INTEGRITY] Discrepancia en peticiones detectada:");
-            System.out.println("  Total asignadas: " + totalAsignadas + ", total originales: " + totalOriginales);
-            System.out.println("  Distribucion asignadas: " + asignadas);
-            System.out.println("  Distribucion originales: " + originales);
+            //System.out.println("[INTEGRITY] Discrepancia en peticiones detectada:");
+            //System.out.println("  Total asignadas: " + totalAsignadas + ", total originales: " + totalOriginales);
+            //System.out.println("  Distribucion asignadas: " + asignadas);
+            //System.out.println("  Distribucion originales: " + originales);
             */
         } else {
             /*
-            System.out.println("[INTEGRITY] Multiconjunto de peticiones OK: total=" + totalAsignadas);
+            //System.out.println("[INTEGRITY] Multiconjunto de peticiones OK: total=" + totalAsignadas);
             */
         }
 

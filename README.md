@@ -86,7 +86,7 @@ javac -version
 - Opción C: ejecutar `java` apuntando a un JDK instalado explícitamente (ruta completa a `java` y `javac`).
 
 Registro de salida y depuración
-- Si el programa imprime mucho por `System.out` durante la búsqueda, redirige la salida a un archivo para analizarla:
+- Si el programa imprime mucho por `//System.out` durante la búsqueda, redirige la salida a un archivo para analizarla:
 
 ```bash
 make run > salida.txt 2>&1

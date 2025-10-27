@@ -42,10 +42,10 @@ public class Main {
     public static String algoritmo = "SA"; // "HC" = Hill Climbing, "SA" = Simulated Annealing
     
     // Parámetros para Simulated Annealing
-    public static int stepsSA = 1000;     // Número de iteraciones
-    public static int stirsSA = 100;      // Cambios de temperatura
-    public static int kSA = 20;            // Parámetro k para la función SA
-    public static double lambdaSA = 0.001; // Parámetro lambda para la función SA
+    public static int stepsSA = 200;     // Número de iteraciones
+    public static int stirsSA = 20;      // Cambios de temperatura
+    public static int kSA = 10;            // Parámetro k para la función SA
+    public static double lambdaSA = 0.01; // Parámetro lambda para la función SA
 
     public static void main(String[] args) throws Exception{
         
@@ -70,7 +70,7 @@ public class Main {
             } else if (opcion == 2) {
                 algoritmo = "SA";
             } else {
-                System.out.println("Opción inválida. Usando Hill Climbing por defecto.");
+                //System.out.println("Opción inválida. Usando Hill Climbing por defecto.");
                 algoritmo = "HC";
             }
         }
@@ -81,6 +81,12 @@ public class Main {
         Main.gasolineras = new Gasolineras(numGasolineras, seed);
         Main.centros = new CentrosDistribucion(numCentros, 1, seed);
         
+
+        for (Gasolinera g : Main.gasolineras) {
+            for (int a : g.getPeticiones()){
+                System.out.println("Peticion de dias " + a + " en gasolinera (" + g.getCoordX() + "," + g.getCoordY() + ")" );
+            }
+        }
         List<Camion> camiones = new ArrayList<>();
         for(int i = 0; i < numCentros; ++i) {
             camiones.add(new Camion(Main.centros.get(i).getCoordX(), Main.centros.get(i).getCoordY()));
@@ -116,11 +122,11 @@ public class Main {
                 if (opInit == 1 || opInit == 2) {
                     inicialMetodo = opInit;
                 } else {
-                    System.out.println("Opción inválida. Usando 1 (más cercano) por defecto.");
+                    //System.out.println("Opción inválida. Usando 1 (más cercano) por defecto.");
                     inicialMetodo = 1;
                 }
             } catch (Exception e) {
-                System.out.println("Entrada no válida. Usando 1 (más cercano) por defecto.");
+                //System.out.println("Entrada no válida. Usando 1 (más cercano) por defecto.");
                 inicialMetodo = 1;
                 scanner.nextLine();
             }
@@ -129,11 +135,11 @@ public class Main {
         board.crearEstadoInicial(inicialMetodo);
 
         //double costeInicial = -board.heuristic();
-        //board.escribirEstadoActual();
+        board.escribirEstadoActual();
 
     GasolinaBoard estadoInicial = board; // tu estado inicial
     // Mostrar diagnósticos de integridad/ganancia antes de la búsqueda
-    System.out.println("Ganancia (sin coste) inicial: " + estadoInicial.calcularGananciaSinCoste());
+    //System.out.println("Ganancia (sin coste) inicial: " + estadoInicial.calcularGananciaSinCoste());
     estadoInicial.verificarIntegridadPeticiones();
     GasolinaHeuristicFunction heuristica = new GasolinaHeuristicFunction();
 
@@ -173,25 +179,25 @@ public class Main {
     double costeFinal = -board.heuristic();
     //board.escribirEstadoActual();
 
-    // System.out.println("Coste inicial: " + costeInicial);
-    // System.out.println("Coste final: " + costeFinal);
+    // //System.out.println("Coste inicial: " + costeInicial);
+    // //System.out.println("Coste final: " + costeFinal);
     long end = System.currentTimeMillis();
 
     GasolinaBoard estadoFinal = (GasolinaBoard)search.getGoalState(); // el estado final encontrado
 
     double heuristicaFinal = heuristica.getHeuristicValue(estadoFinal);
     double beneficioFinal = estadoFinal.calcularBeneficio();
-    System.out.println("Ganancia (sin coste) final: " + estadoFinal.calcularGananciaSinCoste());
+    //System.out.println("Ganancia (sin coste) final: " + estadoFinal.calcularGananciaSinCoste());
     estadoFinal.verificarIntegridadPeticiones();
-    //estadoFinal.escribirEstadoActual();
+    estadoFinal.escribirEstadoActual();
     System.out.println("Heurística inicial: " + heuristicaInicial);
     System.out.println("Heurística final: " + heuristicaFinal);
     System.out.println("Beneficio inicial: " + beneficioInicial);
     System.out.println("Beneficio final: " + beneficioFinal);
 
-    System.out.println("Tiempo de ejecución: " + (end - start) + " ms");
+    //System.out.println("Tiempo de ejecución: " + (end - start) + " ms");
 
-    board.imprimirEstadoPeticiones();
+    //board.imprimirEstadoPeticiones();
 
     // Diagnostic: per-camion breakdown of tramos (provisional vs non-provisional)
     System.out.println("\n--- Diagnostic: detalle por camión (tramos) ---");

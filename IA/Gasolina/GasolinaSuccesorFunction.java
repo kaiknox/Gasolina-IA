@@ -39,7 +39,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accion, newBoard));
                     } else {
-                        System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accion);
+                        //System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accion);
                     }
                 }
             }
@@ -67,7 +67,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                                 if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                                     retval.add(new Successor(accionI, newBoard));
                                 } else {
-                                    System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionI);
+                                    //System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionI);
                                 }
                             }
                         }
@@ -100,7 +100,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accionD, newBoard));
                     } else {
-                        System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionD);
+                        //System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionD);
                     }
 
                     // Swap genérico (permite idx 0<->1, pero queda abierto si hubiese más)
@@ -111,7 +111,7 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                     if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                         retval.add(new Successor(accionS, newBoard));
                     } else {
-                        System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionS);
+                        //System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionS);
                     }
                 }
             }
@@ -141,16 +141,16 @@ public class GasolinaSuccesorFunction implements SuccessorFunction{
                         if (newBoard.contarPeticionesAsignadas().equals(originalAssigned)) {
                             retval.add(new Successor(accionM, newBoard));
                         } else {
-                            System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionM);
+                            //System.out.println("[BUG] Sucesor descartado: cambio en multiconjunto de peticiones: " + accionM);
                         }
                     }
                 }
             }
         }
 
-        /*System.out.println("[DEBUG] Vecinos generados: " + retval.size());
+        /*//System.out.println("[DEBUG] Vecinos generados: " + retval.size());
         for (Successor s : retval) {
-            System.out.println("  - " + s.getAction());
+            //System.out.println("  - " + s.getAction());
         }*/
         return retval;
 
